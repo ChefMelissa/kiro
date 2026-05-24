@@ -26,35 +26,45 @@ app.post('/api/search', async (req, res) => {
   }
 
   try {
-    // Check cache (valid for 1 hour)
-    const [cached] = await pool.query(
-      `SELECT results FROM search_cache 
-       WHERE city = ? AND check_in = ? AND check_out = ? AND adults = ? AND children = ?
-       AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
-       ORDER BY created_at DESC LIMIT 1`,
-      [city, checkIn, checkOut, adults || 2, children || 0]
-    );
+    // Try to check cache first
+    try {
+      const [cached] = await pool.query(
+        `SELECT results FROM search_cache 
+         WHERE city = ? AND check_in = ? AND check_out = ? AND adults = ? AND children = ?
+         AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+         ORDER BY created_at DESC LIMIT 1`,
+        [city, checkIn, checkOut, adults || 2, children || 0]
+      );
 
-    if (cached.length > 0) {
-      const hotels = typeof cached[0].results === 'string' 
-        ? JSON.parse(cached[0].results) 
-        : cached[0].results;
-      return res.json({ hotels, source: 'cache' });
+      if (cached && cached.length > 0) {
+        const hotels = typeof cached[0].results === 'string' 
+          ? JSON.parse(cached[0].results) 
+          : cached[0].results;
+        return res.json({ hotels, source: 'cache' });
+      }
+    } catch (dbErr) {
+      console.log('DB cache check skipped:', dbErr.message);
     }
 
-    // Generate hotels with markup
+    // Generate hotels
     const hotels = generateHotelsWithMarkup(city, checkIn, checkOut, adults || 2, children || 0);
 
-    // Save to cache
-    await pool.query(
-      `INSERT INTO search_cache (city, check_in, check_out, adults, children, results) VALUES (?, ?, ?, ?, ?, ?)`,
-      [city, checkIn, checkOut, adults || 2, children || 0, JSON.stringify(hotels)]
-    );
+    // Try to save to cache (non-blocking)
+    try {
+      await pool.query(
+        `INSERT INTO search_cache (city, check_in, check_out, adults, children, results) VALUES (?, ?, ?, ?, ?, ?)`,
+        [city, checkIn, checkOut, adults || 2, children || 0, JSON.stringify(hotels)]
+      );
+    } catch (dbErr) {
+      console.log('DB cache save skipped:', dbErr.message);
+    }
 
     res.json({ hotels, source: 'live' });
   } catch (error) {
     console.error('Search error:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    // Fallback: return hotels even if everything else fails
+    const hotels = generateHotelsWithMarkup(city, checkIn, checkOut, adults || 2, children || 0);
+    res.json({ hotels, source: 'fallback' });
   }
 });
 
