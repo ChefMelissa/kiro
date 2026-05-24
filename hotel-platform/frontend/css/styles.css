@@ -679,6 +679,49 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* ============== PAYMENT INFO ============== */
+.payment-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin: 15px 0;
+}
+
+.payment-info h4 {
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.payment-info p {
+  font-size: 0.9rem;
+  color: var(--gray);
+  margin-bottom: 10px;
+}
+
+.payment-methods {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.payment-badge {
+  padding: 6px 14px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payment-badge i {
+  color: var(--primary);
+}
+
 /* ============== RESPONSIVE ============== */
 @media (max-width: 992px) {
   .search-row {

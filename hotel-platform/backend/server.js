@@ -2,10 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const db = require('./database');
+require('dotenv').config();
+
+const { pool, testConnection } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MARKUP = parseFloat(process.env.MARKUP_PERCENT || 2) / 100;
 
 // Middleware
 app.use(cors());
@@ -14,243 +17,268 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ============== HOTEL SEARCH API ==============
 
-// Search hotels (uses scraping results or cache)
-app.post('/api/search', (req, res) => {
+app.post('/api/search', async (req, res) => {
   const { city, checkIn, checkOut, adults, children } = req.body;
 
   if (!city || !checkIn || !checkOut) {
     return res.status(400).json({ error: 'Ville, date d\'arrivée et date de départ sont obligatoires' });
   }
 
-  // Check cache (valid for 1 hour)
-  const cached = db.prepare(`
-    SELECT results FROM search_cache 
-    WHERE city = ? AND check_in = ? AND check_out = ? AND adults = ? AND children = ?
-    AND datetime(created_at) > datetime('now', '-1 hour')
-    ORDER BY created_at DESC LIMIT 1
-  `).get(city, checkIn, checkOut, adults || 2, children || 0);
+  try {
+    // Check cache (valid for 1 hour)
+    const [cached] = await pool.query(
+      `SELECT results FROM search_cache 
+       WHERE city = ? AND check_in = ? AND check_out = ? AND adults = ? AND children = ?
+       AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+       ORDER BY created_at DESC LIMIT 1`,
+      [city, checkIn, checkOut, adults || 2, children || 0]
+    );
 
-  if (cached) {
-    return res.json({ hotels: JSON.parse(cached.results), source: 'cache' });
+    if (cached.length > 0) {
+      const hotels = typeof cached[0].results === 'string' 
+        ? JSON.parse(cached[0].results) 
+        : cached[0].results;
+      return res.json({ hotels, source: 'cache' });
+    }
+
+    // Generate hotels with markup
+    const hotels = generateHotelsWithMarkup(city, checkIn, checkOut, adults || 2, children || 0);
+
+    // Save to cache
+    await pool.query(
+      `INSERT INTO search_cache (city, check_in, check_out, adults, children, results) VALUES (?, ?, ?, ?, ?, ?)`,
+      [city, checkIn, checkOut, adults || 2, children || 0, JSON.stringify(hotels)]
+    );
+
+    res.json({ hotels, source: 'live' });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
-
-  // If no cache, return demo data (in production, trigger scraping)
-  const demoHotels = generateDemoHotels(city, checkIn, checkOut, adults || 2, children || 0);
-  
-  // Save to cache
-  db.prepare(`
-    INSERT INTO search_cache (city, check_in, check_out, adults, children, results)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(city, checkIn, checkOut, adults || 2, children || 0, JSON.stringify(demoHotels));
-
-  res.json({ hotels: demoHotels, source: 'live' });
 });
 
 // ============== RESERVATIONS API ==============
 
-// Create a reservation
-app.post('/api/reservations', (req, res) => {
+app.post('/api/reservations', async (req, res) => {
   const {
     hotelName, hotelStars, city, checkIn, checkOut,
     roomType, boardType, adults, children,
-    totalPrice, currency, clientName, clientPhone, clientEmail, notes
+    totalPrice, currency, clientName, clientPhone, clientEmail,
+    agencyName, agencyPhone, notes
   } = req.body;
 
   if (!hotelName || !city || !checkIn || !checkOut || !clientName || !clientPhone) {
     return res.status(400).json({ error: 'Informations obligatoires manquantes' });
   }
 
-  const id = uuidv4();
-  
-  db.prepare(`
-    INSERT INTO reservations (id, hotel_name, hotel_stars, city, check_in, check_out, room_type, board_type, adults, children, total_price, currency, client_name, client_phone, client_email, notes, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-  `).run(id, hotelName, hotelStars, city, checkIn, checkOut, roomType, boardType, adults || 2, children || 0, totalPrice, currency || 'DZD', clientName, clientPhone, clientEmail, notes);
+  try {
+    const id = uuidv4();
+    const basePrice = totalPrice / (1 + MARKUP);
+    
+    await pool.query(
+      `INSERT INTO reservations (id, hotel_name, hotel_stars, city, check_in, check_out, room_type, board_type, adults, children, base_price, markup_percent, total_price, currency, client_name, client_phone, client_email, agency_name, agency_phone, notes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [id, hotelName, hotelStars, city, checkIn, checkOut, roomType, boardType, adults || 2, children || 0, basePrice, MARKUP * 100, totalPrice, currency || 'DZD', clientName, clientPhone, clientEmail, agencyName, agencyPhone, notes]
+    );
 
-  res.json({ 
-    success: true, 
-    reservationId: id,
-    message: 'Réservation créée avec succès'
-  });
+    res.json({ success: true, reservationId: id, message: 'Réservation créée avec succès' });
+  } catch (error) {
+    console.error('Reservation error:', error);
+    res.status(500).json({ error: 'Erreur lors de la création' });
+  }
 });
 
-// Get all reservations (dashboard)
-app.get('/api/reservations', (req, res) => {
+app.get('/api/reservations', async (req, res) => {
   const { status, city, page = 1, limit = 20 } = req.query;
   
-  let query = 'SELECT * FROM reservations WHERE 1=1';
-  const params = [];
+  try {
+    let query = 'SELECT * FROM reservations WHERE 1=1';
+    let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1';
+    const params = [];
+    const countParams = [];
 
-  if (status && status !== 'all') {
-    query += ' AND status = ?';
-    params.push(status);
-  }
-  if (city) {
-    query += ' AND city = ?';
-    params.push(city);
-  }
+    if (status && status !== 'all') {
+      query += ' AND status = ?';
+      countQuery += ' AND status = ?';
+      params.push(status);
+      countParams.push(status);
+    }
+    if (city) {
+      query += ' AND city = ?';
+      countQuery += ' AND city = ?';
+      params.push(city);
+      countParams.push(city);
+    }
 
-  query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-  params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
 
-  const reservations = db.prepare(query).all(...params);
-  
-  // Get total count
-  let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1';
-  const countParams = [];
-  if (status && status !== 'all') {
-    countQuery += ' AND status = ?';
-    countParams.push(status);
-  }
-  if (city) {
-    countQuery += ' AND city = ?';
-    countParams.push(city);
-  }
-  const { total } = db.prepare(countQuery).get(...countParams);
+    const [reservations] = await pool.query(query, params);
+    const [countResult] = await pool.query(countQuery, countParams);
 
-  res.json({ reservations, total, page: parseInt(page), limit: parseInt(limit) });
+    res.json({ reservations, total: countResult[0].total, page: parseInt(page), limit: parseInt(limit) });
+  } catch (error) {
+    console.error('List error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
-// Get single reservation
-app.get('/api/reservations/:id', (req, res) => {
-  const reservation = db.prepare('SELECT * FROM reservations WHERE id = ?').get(req.params.id);
-  if (!reservation) {
-    return res.status(404).json({ error: 'Réservation non trouvée' });
+app.get('/api/reservations/:id', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM reservations WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Réservation non trouvée' });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur serveur' });
   }
-  res.json(reservation);
 });
 
-// Update reservation status
-app.patch('/api/reservations/:id', (req, res) => {
-  const { status, notes } = req.body;
+app.patch('/api/reservations/:id', async (req, res) => {
+  const { status, notes, paymentMethod } = req.body;
   const validStatuses = ['pending', 'confirmed', 'paid', 'cancelled'];
-  
+
   if (status && !validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Statut invalide' });
   }
 
-  const reservation = db.prepare('SELECT * FROM reservations WHERE id = ?').get(req.params.id);
-  if (!reservation) {
-    return res.status(404).json({ error: 'Réservation non trouvée' });
-  }
+  try {
+    const updates = [];
+    const params = [];
 
-  if (status) {
-    db.prepare('UPDATE reservations SET status = ?, updated_at = datetime(\'now\') WHERE id = ?').run(status, req.params.id);
-  }
-  if (notes !== undefined) {
-    db.prepare('UPDATE reservations SET notes = ?, updated_at = datetime(\'now\') WHERE id = ?').run(notes, req.params.id);
-  }
+    if (status) { updates.push('status = ?'); params.push(status); }
+    if (notes !== undefined) { updates.push('notes = ?'); params.push(notes); }
+    if (paymentMethod) { updates.push('payment_method = ?'); params.push(paymentMethod); }
 
-  res.json({ success: true, message: 'Réservation mise à jour' });
+    if (updates.length === 0) return res.status(400).json({ error: 'Rien à mettre à jour' });
+
+    params.push(req.params.id);
+    await pool.query(`UPDATE reservations SET ${updates.join(', ')} WHERE id = ?`, params);
+
+    res.json({ success: true, message: 'Réservation mise à jour' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
-// Delete reservation
-app.delete('/api/reservations/:id', (req, res) => {
-  const result = db.prepare('DELETE FROM reservations WHERE id = ?').run(req.params.id);
-  if (result.changes === 0) {
-    return res.status(404).json({ error: 'Réservation non trouvée' });
+app.delete('/api/reservations/:id', async (req, res) => {
+  try {
+    const [result] = await pool.query('DELETE FROM reservations WHERE id = ?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Réservation non trouvée' });
+    res.json({ success: true, message: 'Réservation supprimée' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur serveur' });
   }
-  res.json({ success: true, message: 'Réservation supprimée' });
 });
 
 // ============== STATISTICS API ==============
 
-app.get('/api/stats', (req, res) => {
-  const totalReservations = db.prepare('SELECT COUNT(*) as count FROM reservations').get().count;
-  const pendingReservations = db.prepare('SELECT COUNT(*) as count FROM reservations WHERE status = ?').get('pending').count;
-  const confirmedReservations = db.prepare('SELECT COUNT(*) as count FROM reservations WHERE status = ?').get('confirmed').count;
-  const paidReservations = db.prepare('SELECT COUNT(*) as count FROM reservations WHERE status = ?').get('paid').count;
-  const cancelledReservations = db.prepare('SELECT COUNT(*) as count FROM reservations WHERE status = ?').get('cancelled').count;
-  const totalRevenue = db.prepare('SELECT COALESCE(SUM(total_price), 0) as total FROM reservations WHERE status = ?').get('paid').total;
-  
-  const topHotels = db.prepare(`
-    SELECT hotel_name, city, COUNT(*) as bookings 
-    FROM reservations WHERE status != 'cancelled'
-    GROUP BY hotel_name ORDER BY bookings DESC LIMIT 5
-  `).all();
+app.get('/api/stats', async (req, res) => {
+  try {
+    const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM reservations');
+    const [[{ pending }]] = await pool.query('SELECT COUNT(*) as pending FROM reservations WHERE status = "pending"');
+    const [[{ confirmed }]] = await pool.query('SELECT COUNT(*) as confirmed FROM reservations WHERE status = "confirmed"');
+    const [[{ paid }]] = await pool.query('SELECT COUNT(*) as paid FROM reservations WHERE status = "paid"');
+    const [[{ cancelled }]] = await pool.query('SELECT COUNT(*) as cancelled FROM reservations WHERE status = "cancelled"');
+    const [[{ revenue }]] = await pool.query('SELECT COALESCE(SUM(total_price), 0) as revenue FROM reservations WHERE status = "paid"');
+    const [[{ profit }]] = await pool.query('SELECT COALESCE(SUM(total_price - base_price), 0) as profit FROM reservations WHERE status = "paid"');
 
-  const citiesStats = db.prepare(`
-    SELECT city, COUNT(*) as bookings 
-    FROM reservations WHERE status != 'cancelled'
-    GROUP BY city ORDER BY bookings DESC
-  `).all();
+    const [topHotels] = await pool.query(
+      `SELECT hotel_name, city, COUNT(*) as bookings FROM reservations WHERE status != 'cancelled' GROUP BY hotel_name, city ORDER BY bookings DESC LIMIT 5`
+    );
+    const [citiesStats] = await pool.query(
+      `SELECT city, COUNT(*) as bookings FROM reservations WHERE status != 'cancelled' GROUP BY city ORDER BY bookings DESC`
+    );
 
-  res.json({
-    totalReservations,
-    pendingReservations,
-    confirmedReservations,
-    paidReservations,
-    cancelledReservations,
-    totalRevenue,
-    topHotels,
-    citiesStats
-  });
+    res.json({
+      totalReservations: total,
+      pendingReservations: pending,
+      confirmedReservations: confirmed,
+      paidReservations: paid,
+      cancelledReservations: cancelled,
+      totalRevenue: revenue,
+      totalProfit: profit,
+      markupPercent: MARKUP * 100,
+      topHotels,
+      citiesStats
+    });
+  } catch (error) {
+    console.error('Stats error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
-// ============== DEMO DATA GENERATOR ==============
+// ============== HOTEL DATA GENERATOR (with markup) ==============
 
-function generateDemoHotels(city, checkIn, checkOut, adults, children) {
+function generateHotelsWithMarkup(city, checkIn, checkOut, adults, children) {
   const hotelsByCity = {
     'Sousse': [
-      { name: 'Royal Jinene', stars: 4, tags: ['Famille', 'Bord de Mer', 'Toboggan'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Royal+Jinene' },
-      { name: 'Jinene Resort', stars: 3, tags: ['Bord de Mer', 'Piscine'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Jinene+Resort' },
-      { name: 'Soviva Resort & Aquapark', stars: 4, tags: ['Aquapark', 'Famille', 'Animation'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Soviva+Resort' },
-      { name: 'Kantaoui Center', stars: 3, tags: ['Centre ville', 'Économique'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Kantaoui+Center' },
-      { name: 'Sol Palmeras Beach', stars: 4, tags: ['Bord de Mer', 'All Inclusive'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Sol+Palmeras' },
-      { name: 'Houria Palace', stars: 5, tags: ['Luxe', 'Spa', 'Bord de Mer'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Houria+Palace' },
-      { name: 'Miramar Sharm', stars: 3, tags: ['Piscine', 'Famille'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Miramar+Sharm' },
-      { name: 'Best Beach Hotel', stars: 4, tags: ['Bord de Mer', 'Moderne'], image: 'https://via.placeholder.com/400x250/0099cc/ffffff?text=Best+Beach' }
+      { name: 'Royal Jinene', stars: 4, tags: ['Famille', 'Bord de Mer', 'Toboggan'], img: 'royal-jinene' },
+      { name: 'Jinene Resort', stars: 3, tags: ['Bord de Mer', 'Piscine'], img: 'jinene-resort' },
+      { name: 'Soviva Resort & Aquapark', stars: 4, tags: ['Aquapark', 'Famille', 'Animation'], img: 'soviva' },
+      { name: 'Kantaoui Center', stars: 3, tags: ['Centre ville', 'Économique'], img: 'kantaoui' },
+      { name: 'Sol Palmeras Beach', stars: 4, tags: ['Bord de Mer', 'All Inclusive'], img: 'sol-palmeras' },
+      { name: 'Houria Palace', stars: 5, tags: ['Luxe', 'Spa', 'Bord de Mer'], img: 'houria-palace' },
+      { name: 'Miramar Sharm', stars: 3, tags: ['Piscine', 'Famille'], img: 'miramar' },
+      { name: 'Best Beach Hotel', stars: 4, tags: ['Bord de Mer', 'Moderne'], img: 'best-beach' }
     ],
     'Hammamet': [
-      { name: 'Hammamet Garden Resort', stars: 4, tags: ['Jardin', 'Piscine', 'Famille'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Hammamet+Garden' },
-      { name: 'Medina Belisaire', stars: 4, tags: ['Thalasso', 'Bord de Mer'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Medina+Belisaire' },
-      { name: 'Samira Club', stars: 3, tags: ['Animation', 'Piscine'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Samira+Club' },
-      { name: 'Paradis Palace', stars: 5, tags: ['Luxe', 'Spa', 'Golf'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Paradis+Palace' },
-      { name: 'Golden Tulip', stars: 4, tags: ['Business', 'Moderne'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Golden+Tulip' },
-      { name: 'Nahrawess Thalasso', stars: 4, tags: ['Thalasso', 'Détente'], image: 'https://via.placeholder.com/400x250/ff6600/ffffff?text=Nahrawess' }
+      { name: 'Hammamet Garden Resort', stars: 4, tags: ['Jardin', 'Piscine', 'Famille'], img: 'hammamet-garden' },
+      { name: 'Medina Belisaire', stars: 4, tags: ['Thalasso', 'Bord de Mer'], img: 'medina-belisaire' },
+      { name: 'Samira Club', stars: 3, tags: ['Animation', 'Piscine'], img: 'samira-club' },
+      { name: 'Paradis Palace', stars: 5, tags: ['Luxe', 'Spa', 'Golf'], img: 'paradis-palace' },
+      { name: 'Golden Tulip', stars: 4, tags: ['Business', 'Moderne'], img: 'golden-tulip' },
+      { name: 'Nahrawess Thalasso', stars: 4, tags: ['Thalasso', 'Détente'], img: 'nahrawess' }
     ],
     'Djerba': [
-      { name: 'Djerba Plaza', stars: 4, tags: ['Bord de Mer', 'Famille'], image: 'https://via.placeholder.com/400x250/009933/ffffff?text=Djerba+Plaza' },
-      { name: 'Club Meninx', stars: 3, tags: ['All Inclusive', 'Animation'], image: 'https://via.placeholder.com/400x250/009933/ffffff?text=Club+Meninx' },
-      { name: 'Radisson Blu Palace', stars: 5, tags: ['Luxe', 'Spa', 'Thalasso'], image: 'https://via.placeholder.com/400x250/009933/ffffff?text=Radisson+Blu' },
-      { name: 'Sentido Djerba Beach', stars: 4, tags: ['Bord de Mer', 'Adultes'], image: 'https://via.placeholder.com/400x250/009933/ffffff?text=Sentido' },
-      { name: 'Seabel Alhambra', stars: 4, tags: ['Jardin', 'Famille', 'Piscine'], image: 'https://via.placeholder.com/400x250/009933/ffffff?text=Seabel+Alhambra' }
+      { name: 'Djerba Plaza', stars: 4, tags: ['Bord de Mer', 'Famille'], img: 'djerba-plaza' },
+      { name: 'Club Meninx', stars: 3, tags: ['All Inclusive', 'Animation'], img: 'club-meninx' },
+      { name: 'Radisson Blu Palace', stars: 5, tags: ['Luxe', 'Spa', 'Thalasso'], img: 'radisson-blu' },
+      { name: 'Sentido Djerba Beach', stars: 4, tags: ['Bord de Mer', 'Adultes'], img: 'sentido' },
+      { name: 'Seabel Alhambra', stars: 4, tags: ['Jardin', 'Famille', 'Piscine'], img: 'seabel' }
     ],
     'Monastir': [
-      { name: 'Royal Thalassa Monastir', stars: 5, tags: ['Thalasso', 'Luxe', 'Bord de Mer'], image: 'https://via.placeholder.com/400x250/990099/ffffff?text=Royal+Thalassa' },
-      { name: 'Sahara Beach Aquapark', stars: 3, tags: ['Aquapark', 'Famille'], image: 'https://via.placeholder.com/400x250/990099/ffffff?text=Sahara+Beach' },
-      { name: 'Skanes Serail', stars: 4, tags: ['Bord de Mer', 'Animation'], image: 'https://via.placeholder.com/400x250/990099/ffffff?text=Skanes+Serail' },
-      { name: 'One Resort Monastir', stars: 4, tags: ['Moderne', 'Piscine'], image: 'https://via.placeholder.com/400x250/990099/ffffff?text=One+Resort' },
-      { name: 'Marina Cap Monastir', stars: 3, tags: ['Port', 'Économique'], image: 'https://via.placeholder.com/400x250/990099/ffffff?text=Marina+Cap' }
+      { name: 'Royal Thalassa Monastir', stars: 5, tags: ['Thalasso', 'Luxe', 'Bord de Mer'], img: 'royal-thalassa' },
+      { name: 'Sahara Beach Aquapark', stars: 3, tags: ['Aquapark', 'Famille'], img: 'sahara-beach' },
+      { name: 'Skanes Serail', stars: 4, tags: ['Bord de Mer', 'Animation'], img: 'skanes-serail' },
+      { name: 'One Resort Monastir', stars: 4, tags: ['Moderne', 'Piscine'], img: 'one-resort' },
+      { name: 'Marina Cap Monastir', stars: 3, tags: ['Port', 'Économique'], img: 'marina-cap' }
     ]
   };
 
   const cityHotels = hotelsByCity[city] || hotelsByCity['Sousse'];
-  
-  // Calculate number of nights
   const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
 
   return cityHotels.map(hotel => {
-    const basePrice = hotel.stars === 5 ? 15000 : hotel.stars === 4 ? 10000 : 7000;
-    const pricePerNight = basePrice + Math.floor(Math.random() * 3000);
-    const totalLPD = pricePerNight * nights;
-    const totalDP = Math.floor(totalLPD * 1.3);
-    const totalAI = Math.floor(totalLPD * 1.6);
+    // Base prices (simulating TunisiaBeds prices)
+    const basePricePerNight = hotel.stars === 5 ? 14000 : hotel.stars === 4 ? 9500 : 6500;
+    const variation = Math.floor(Math.random() * 2500);
+    
+    const baseLPD = (basePricePerNight + variation) * nights;
+    const baseDP = Math.floor(baseLPD * 1.3);
+    const baseAI = Math.floor(baseLPD * 1.6);
+    
+    // Apply 2% markup
+    const priceLPD = Math.ceil(baseLPD * (1 + MARKUP));
+    const priceDP = Math.ceil(baseDP * (1 + MARKUP));
+    const priceAI = Math.ceil(baseAI * (1 + MARKUP));
+    
     const discount = Math.floor(Math.random() * 20) + 25;
-    const originalPrice = Math.floor(totalLPD * (100 / (100 - discount)));
+    const originalLPD = Math.floor(priceLPD * (100 / (100 - discount)));
+    const originalDP = Math.floor(priceDP * (100 / (100 - discount)));
+    const originalAI = Math.floor(priceAI * (100 / (100 - discount)));
 
     return {
       name: hotel.name,
       stars: hotel.stars,
-      city: city,
+      city,
       tags: hotel.tags,
-      image: hotel.image,
-      discount: discount,
-      nights: nights,
+      image: `https://placehold.co/400x250/0099cc/ffffff?text=${encodeURIComponent(hotel.name)}`,
+      discount,
+      nights,
       prices: {
-        lpd: { label: 'Logement Petit Déjeuner', price: totalLPD, originalPrice: originalPrice },
-        dp: { label: 'Demi Pension (DP+)', price: totalDP, originalPrice: Math.floor(originalPrice * 1.3) },
-        ai: { label: 'Soft All Inclusive', price: totalAI, originalPrice: Math.floor(originalPrice * 1.6) }
+        lpd: { label: 'Logement Petit Déjeuner', price: priceLPD, originalPrice: originalLPD },
+        dp: { label: 'Demi Pension (DP+)', price: priceDP, originalPrice: originalDP },
+        ai: { label: 'Soft All Inclusive', price: priceAI, originalPrice: originalAI }
       },
       rooms: [
         { type: 'Chambre Standard', available: true },
@@ -272,8 +300,22 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'pages', 'dashboard.html'));
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🏨 Hotel Platform running on http://localhost:${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-});
+// ============== START SERVER ==============
+
+async function startServer() {
+  const dbConnected = await testConnection();
+  
+  if (!dbConnected) {
+    console.log('⚠️  MySQL non connecté - Le serveur fonctionne en mode démo');
+    console.log('   Exécutez: npm run setup-db');
+  }
+
+  app.listen(PORT, () => {
+    console.log(`\n🏨 TuniStay B2B Platform`);
+    console.log(`   Site:      http://localhost:${PORT}`);
+    console.log(`   Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`   Marge:     ${MARKUP * 100}%\n`);
+  });
+}
+
+startServer();
