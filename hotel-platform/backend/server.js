@@ -8,7 +8,8 @@ const { pool, testConnection } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MARKUP = parseFloat(process.env.MARKUP_PERCENT || 2) / 100;
+// Pas de marge ajoutée côté serveur - les prix TunisiaBeds incluent déjà la marge
+// Les agences peuvent ajouter leur propre marge côté frontend
 
 // Middleware
 app.use(cors());
@@ -73,12 +74,11 @@ app.post('/api/reservations', async (req, res) => {
 
   try {
     const id = uuidv4();
-    const basePrice = totalPrice / (1 + MARKUP);
     
     await pool.query(
       `INSERT INTO reservations (id, hotel_name, hotel_stars, city, check_in, check_out, room_type, board_type, adults, children, base_price, markup_percent, total_price, currency, client_name, client_phone, client_email, agency_name, agency_phone, notes, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [id, hotelName, hotelStars, city, checkIn, checkOut, roomType, boardType, adults || 2, children || 0, basePrice, MARKUP * 100, totalPrice, currency || 'DZD', clientName, clientPhone, clientEmail, agencyName, agencyPhone, notes]
+      [id, hotelName, hotelStars, city, checkIn, checkOut, roomType, boardType, adults || 2, children || 0, totalPrice, 0, totalPrice, currency || 'DZD', clientName, clientPhone, clientEmail, agencyName, agencyPhone, notes]
     );
 
     res.json({ success: true, reservationId: id, message: 'Réservation créée avec succès' });
@@ -180,7 +180,6 @@ app.get('/api/stats', async (req, res) => {
     const [[{ paid }]] = await pool.query('SELECT COUNT(*) as paid FROM reservations WHERE status = "paid"');
     const [[{ cancelled }]] = await pool.query('SELECT COUNT(*) as cancelled FROM reservations WHERE status = "cancelled"');
     const [[{ revenue }]] = await pool.query('SELECT COALESCE(SUM(total_price), 0) as revenue FROM reservations WHERE status = "paid"');
-    const [[{ profit }]] = await pool.query('SELECT COALESCE(SUM(total_price - base_price), 0) as profit FROM reservations WHERE status = "paid"');
 
     const [topHotels] = await pool.query(
       `SELECT hotel_name, city, COUNT(*) as bookings FROM reservations WHERE status != 'cancelled' GROUP BY hotel_name, city ORDER BY bookings DESC LIMIT 5`
@@ -196,8 +195,6 @@ app.get('/api/stats', async (req, res) => {
       paidReservations: paid,
       cancelledReservations: cancelled,
       totalRevenue: revenue,
-      totalProfit: profit,
-      markupPercent: MARKUP * 100,
       topHotels,
       citiesStats
     });
@@ -249,18 +246,13 @@ function generateHotelsWithMarkup(city, checkIn, checkOut, adults, children) {
   const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
 
   return cityHotels.map(hotel => {
-    // Base prices (simulating TunisiaBeds prices)
+    // Prices from TunisiaBeds (already include our 2% margin)
     const basePricePerNight = hotel.stars === 5 ? 14000 : hotel.stars === 4 ? 9500 : 6500;
     const variation = Math.floor(Math.random() * 2500);
     
-    const baseLPD = (basePricePerNight + variation) * nights;
-    const baseDP = Math.floor(baseLPD * 1.3);
-    const baseAI = Math.floor(baseLPD * 1.6);
-    
-    // Apply 2% markup
-    const priceLPD = Math.ceil(baseLPD * (1 + MARKUP));
-    const priceDP = Math.ceil(baseDP * (1 + MARKUP));
-    const priceAI = Math.ceil(baseAI * (1 + MARKUP));
+    const priceLPD = (basePricePerNight + variation) * nights;
+    const priceDP = Math.floor(priceLPD * 1.3);
+    const priceAI = Math.floor(priceLPD * 1.6);
     
     const discount = Math.floor(Math.random() * 20) + 25;
     const originalLPD = Math.floor(priceLPD * (100 / (100 - discount)));

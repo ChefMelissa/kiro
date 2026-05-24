@@ -89,6 +89,24 @@
   <!-- Results Section -->
   <section class="results-section" id="resultsSection" style="display: none;">
     <div class="container">
+      <!-- Agency Markup Controls -->
+      <div class="markup-box">
+        <div class="markup-title"><i class="fas fa-percentage"></i> Votre marge (optionnel)</div>
+        <div class="markup-controls">
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="none" checked> Sans marge
+          </label>
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="percent"> Pourcentage (%)
+          </label>
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="fixed"> Montant fixe (DZD)
+          </label>
+          <input type="number" id="markupValue" class="markup-input" placeholder="0" min="0" disabled>
+        </div>
+        <p class="markup-hint">Ajoutez votre marge pour afficher le prix final à proposer à vos clients</p>
+      </div>
+
       <div class="results-header">
         <h2 id="resultsTitle"></h2>
         <div class="results-filters">

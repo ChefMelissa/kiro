@@ -5,6 +5,8 @@ const WHATSAPP_NUMBER = '213XXXXXXXXX'; // ← CHANGEZ CECI avec votre numéro W
 let currentHotels = [];
 let selectedHotel = null;
 let selectedBoard = null;
+let agencyMarkupType = 'none'; // 'none', 'percent', 'fixed'
+let agencyMarkupValue = 0;
 
 // ============== INITIALIZATION ==============
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,6 +40,28 @@ function initSearchForm() {
   document.getElementById('searchForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     await searchHotels();
+  });
+
+  // Markup controls
+  document.querySelectorAll('input[name="markupType"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      agencyMarkupType = e.target.value;
+      const input = document.getElementById('markupValue');
+      if (agencyMarkupType === 'none') {
+        input.disabled = true;
+        input.value = '';
+        agencyMarkupValue = 0;
+      } else {
+        input.disabled = false;
+        input.placeholder = agencyMarkupType === 'percent' ? 'Ex: 5' : 'Ex: 3000';
+      }
+      if (currentHotels.length > 0) refreshResults();
+    });
+  });
+
+  document.getElementById('markupValue')?.addEventListener('input', (e) => {
+    agencyMarkupValue = parseFloat(e.target.value) || 0;
+    if (currentHotels.length > 0) refreshResults();
   });
 }
 
@@ -105,6 +129,7 @@ function createHotelCard(hotel, index) {
   const stars = '★'.repeat(hotel.stars) + '☆'.repeat(5 - hotel.stars);
   const tags = hotel.tags.map(t => `<span class="hotel-tag">${t}</span>`).join('');
   const price = hotel.prices.lpd;
+  const displayPrice = applyMarkup(price.price);
 
   return `
     <div class="hotel-card" data-index="${index}">
@@ -129,8 +154,8 @@ function createHotelCard(hotel, index) {
       <div class="hotel-pricing" id="pricing-${index}">
         <div>
           <div class="price-label">à partir de</div>
-          <div class="price-original">${formatPrice(price.originalPrice)} DZD</div>
-          <div class="price-current">${formatPrice(price.price)}</div>
+          <div class="price-original">${formatPrice(applyMarkup(price.originalPrice))} DZD</div>
+          <div class="price-current">${formatPrice(displayPrice)}</div>
           <div class="price-currency">DZD</div>
           <div class="price-nights">${hotel.nights} nuits</div>
         </div>
@@ -145,6 +170,7 @@ function createHotelCard(hotel, index) {
 function switchBoard(index, boardKey) {
   const hotel = currentHotels[index];
   const price = hotel.prices[boardKey];
+  const displayPrice = applyMarkup(price.price);
   const card = document.querySelectorAll('.hotel-card')[index];
   
   card.querySelectorAll('.board-tab').forEach(t => t.classList.remove('active'));
@@ -153,8 +179,8 @@ function switchBoard(index, boardKey) {
   document.getElementById(`pricing-${index}`).innerHTML = `
     <div>
       <div class="price-label">à partir de</div>
-      <div class="price-original">${formatPrice(price.originalPrice)} DZD</div>
-      <div class="price-current">${formatPrice(price.price)}</div>
+      <div class="price-original">${formatPrice(applyMarkup(price.originalPrice))} DZD</div>
+      <div class="price-current">${formatPrice(displayPrice)}</div>
       <div class="price-currency">DZD</div>
       <div class="price-nights">${hotel.nights} nuits</div>
     </div>
@@ -180,12 +206,13 @@ function openBooking(index, boardKey) {
   selectedHotel = currentHotels[index];
   selectedBoard = boardKey;
   const price = selectedHotel.prices[boardKey];
+  const clientPrice = applyMarkup(price.price);
   const checkIn = document.getElementById('checkIn').value;
   const checkOut = document.getElementById('checkOut').value;
   const adults = document.getElementById('adults').value;
   const children = document.getElementById('children').value;
 
-  document.getElementById('bookingSummary').innerHTML = `
+  let summaryHtml = `
     <h4><i class="fas fa-hotel"></i> ${selectedHotel.name} ${'★'.repeat(selectedHotel.stars)}</h4>
     <div class="detail-row"><span>Destination</span><span>${selectedHotel.city}</span></div>
     <div class="detail-row"><span>Arrivée</span><span>${formatDateDisplay(checkIn)}</span></div>
@@ -193,8 +220,16 @@ function openBooking(index, boardKey) {
     <div class="detail-row"><span>Durée</span><span>${selectedHotel.nights} nuits</span></div>
     <div class="detail-row"><span>Formule</span><span>${price.label}</span></div>
     <div class="detail-row"><span>Voyageurs</span><span>${adults} adulte(s)${children > 0 ? ', ' + children + ' enfant(s)' : ''}</span></div>
-    <div class="detail-row total"><span>Total</span><span>${formatPrice(price.price)} DZD</span></div>
-  `;
+    <div class="detail-row"><span>Prix de base</span><span>${formatPrice(price.price)} DZD</span></div>`;
+  
+  if (agencyMarkupType !== 'none' && agencyMarkupValue > 0) {
+    const markupLabel = agencyMarkupType === 'percent' ? `+${agencyMarkupValue}%` : `+${formatPrice(agencyMarkupValue)} DZD`;
+    summaryHtml += `<div class="detail-row"><span>Votre marge (${markupLabel})</span><span>+${formatPrice(clientPrice - price.price)} DZD</span></div>`;
+  }
+  
+  summaryHtml += `<div class="detail-row total"><span>Prix client final</span><span>${formatPrice(clientPrice)} DZD</span></div>`;
+
+  document.getElementById('bookingSummary').innerHTML = summaryHtml;
 
   document.getElementById('bookingModal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -223,6 +258,7 @@ async function handleBooking(e) {
 
   // Save to backend
   try {
+    const clientPrice = applyMarkup(price.price);
     await fetch('/api/reservations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -235,7 +271,7 @@ async function handleBooking(e) {
         boardType: price.label,
         adults: parseInt(adults),
         children: parseInt(children),
-        totalPrice: price.price,
+        totalPrice: clientPrice,
         currency: 'DZD',
         clientName, clientPhone, clientEmail,
         agencyName, agencyPhone,
@@ -246,7 +282,8 @@ async function handleBooking(e) {
     console.log('Backend save skipped');
   }
 
-  // Build WhatsApp message
+  // Build WhatsApp message (shows base price to you, not the client markup)
+  const clientPrice = applyMarkup(price.price);
   let msg = `🏨 *DEMANDE DE RÉSERVATION*\n\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━\n`;
   if (agencyName) msg += `*Agence:* ${agencyName}\n`;
@@ -258,9 +295,12 @@ async function handleBooking(e) {
   msg += `*Départ:* ${formatDateDisplay(checkOut)}\n`;
   msg += `*Nuits:* ${selectedHotel.nights}\n`;
   msg += `*Formule:* ${price.label}\n`;
-  msg += `*Voyageurs:* ${adults} adulte(s)${children > 0 ? ', ' + children + ' enfant(s)' : ''}\n`;
-  msg += `*Prix Total:* ${formatPrice(price.price)} DZD\n\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `*Voyageurs:* ${adults} adulte(s)${children > 0 ? ', ' + children + ' enfant(s)' : ''}\n\n`;
+  msg += `*Prix TuniStay:* ${formatPrice(price.price)} DZD\n`;
+  if (agencyMarkupType !== 'none' && agencyMarkupValue > 0) {
+    msg += `*Prix client (avec marge agence):* ${formatPrice(clientPrice)} DZD\n`;
+  }
+  msg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `👤 *Client:*\n`;
   msg += `*Nom:* ${clientName}\n`;
   msg += `*Tél:* ${clientPhone}\n`;
@@ -281,6 +321,22 @@ function formatDateDisplay(str) { return new Date(str).toLocaleDateString('fr-FR
 function formatPrice(p) { return Math.round(p).toLocaleString('fr-FR'); }
 function calculateNights(a, b) { return Math.ceil((new Date(b) - new Date(a)) / 86400000); }
 function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+
+function applyMarkup(price) {
+  if (agencyMarkupType === 'percent' && agencyMarkupValue > 0) {
+    return Math.ceil(price * (1 + agencyMarkupValue / 100));
+  } else if (agencyMarkupType === 'fixed' && agencyMarkupValue > 0) {
+    return price + agencyMarkupValue;
+  }
+  return price;
+}
+
+function refreshResults() {
+  const city = document.getElementById('city').value;
+  const checkIn = document.getElementById('checkIn').value;
+  const checkOut = document.getElementById('checkOut').value;
+  if (currentHotels.length > 0) displayResults(city, checkIn, checkOut);
+}
 
 function showToast(message) {
   const t = document.createElement('div');
