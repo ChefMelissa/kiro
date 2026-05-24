@@ -1,0 +1,15 @@
+{
+  "name": "hotel-platform",
+  "version": "1.0.0",
+  "description": "Plateforme de réservation d'hôtels en Tunisie - Scraping TunisiaBeds",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  }
+}

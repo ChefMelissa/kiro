@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réservation Hôtels Tunisie - Meilleurs Prix</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo">
+          <i class="fas fa-hotel"></i>
+          <span>TuniStay</span>
+        </a>
+        <nav class="nav">
+          <a href="/" class="nav-link active">Accueil</a>
+          <a href="/dashboard" class="nav-link">Dashboard</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with Search -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content">
+        <h1>Réservez votre hôtel en Tunisie</h1>
+        <p>Les meilleurs tarifs garantis sur les hôtels en Tunisie</p>
+      </div>
+      
+      <!-- Search Form -->
+      <div class="search-box">
+        <form id="searchForm" class="search-form">
+          <div class="search-row">
+            <div class="form-group">
+              <label><i class="fas fa-map-marker-alt"></i> Destination</label>
+              <select id="city" required>
+                <option value="">Choisir une ville</option>
+                <option value="Sousse">Sousse</option>
+                <option value="Hammamet">Hammamet</option>
+                <option value="Djerba">Djerba</option>
+                <option value="Monastir">Monastir</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar"></i> Arrivée</label>
+              <input type="date" id="checkIn" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar-check"></i> Départ</label>
+              <input type="date" id="checkOut" required>
+            </div>
+            <div class="form-group form-group-small">
+              <label><i class="fas fa-user"></i> Adultes</label>
+              <select id="adults">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div class="form-group form-group-small">
+              <label><i class="fas fa-child"></i> Enfants</label>
+              <select id="children">
+                <option value="0" selected>0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="form-group form-group-btn">
+              <button type="submit" class="btn-search">
+                <i class="fas fa-search"></i> Rechercher
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="results-section" id="resultsSection" style="display: none;">
+    <div class="container">
+      <div class="results-header">
+        <h2 id="resultsTitle"></h2>
+        <div class="results-filters">
+          <button class="filter-btn active" data-sort="recommended">Recommandé</button>
+          <button class="filter-btn" data-sort="price-asc">Prix ↑</button>
+          <button class="filter-btn" data-sort="price-desc">Prix ↓</button>
+          <button class="filter-btn" data-sort="stars">Étoiles</button>
+        </div>
+      </div>
+      <div class="results-grid" id="resultsGrid">
+        <!-- Hotels will be injected here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading" style="display: none;">
+    <div class="spinner"></div>
+    <p>Recherche des meilleurs tarifs...</p>
+  </div>
+
+  <!-- Booking Modal -->
+  <div class="modal-overlay" id="bookingModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-bookmark"></i> Finaliser la réservation</h3>
+        <button class="modal-close" onclick="closeBookingModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Booking Summary -->
+        <div class="booking-summary" id="bookingSummary"></div>
+        
+        <!-- Client Form -->
+        <form id="bookingForm">
+          <h4>Vos informations</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom complet *</label>
+              <input type="text" id="clientName" placeholder="Votre nom complet" required>
+            </div>
+            <div class="form-group">
+              <label>Téléphone *</label>
+              <input type="tel" id="clientPhone" placeholder="+213 XX XXX XXXX" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="clientEmail" placeholder="votre@email.com">
+          </div>
+          <div class="form-group">
+            <label>Notes supplémentaires</label>
+            <textarea id="clientNotes" placeholder="Demandes spéciales, préférences..."></textarea>
+          </div>
+          <button type="submit" class="btn-confirm">
+            <i class="fab fa-whatsapp"></i> Confirmer et envoyer via WhatsApp
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Pourquoi nous choisir ?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-tags"></i></div>
+          <h3>Meilleurs Prix</h3>
+          <p>Tarifs négociés jusqu'à -45% par rapport aux sites classiques</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Réservation Sécurisée</h3>
+          <p>Paiement sécurisé et confirmation immédiate</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-headset"></i></div>
+          <h3>Support 24/7</h3>
+          <p>Notre équipe est disponible à tout moment pour vous aider</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-star"></i></div>
+          <h3>Hôtels Vérifiés</h3>
+          <p>Tous nos hôtels sont vérifiés et notés par nos clients</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3><i class="fas fa-hotel"></i> TuniStay</h3>
+          <p>Votre partenaire pour des vacances inoubliables en Tunisie.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Destinations</h4>
+          <a href="#" onclick="searchCity('Sousse')">Sousse</a>
+          <a href="#" onclick="searchCity('Hammamet')">Hammamet</a>
+          <a href="#" onclick="searchCity('Djerba')">Djerba</a>
+          <a href="#" onclick="searchCity('Monastir')">Monastir</a>
+        </div>
+        <div class="footer-links">
+          <h4>Contact</h4>
+          <a href="#"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="#"><i class="fab fa-facebook"></i> Facebook</a>
+          <a href="#"><i class="fas fa-envelope"></i> Email</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 TuniStay - Tous droits réservés</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
