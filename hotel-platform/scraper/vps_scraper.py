@@ -288,30 +288,32 @@ def login_tunisiabeds(page):
         return False
     
     try:
-        # Try login page
-        page.goto(f"{url}/login", wait_until='networkidle', timeout=15000)
-        time.sleep(1)
-        
-        # Fill login form
-        email_input = page.locator('input[type="email"], input[name="email"], input[name="username"]')
-        if email_input.count() > 0:
-            email_input.first.fill(username)
-        
-        pass_input = page.locator('input[type="password"]')
-        if pass_input.count() > 0:
-            pass_input.first.fill(password)
-        
-        submit_btn = page.locator('button[type="submit"], input[type="submit"]')
-        if submit_btn.count() > 0:
-            submit_btn.first.click()
-        
-        page.wait_for_load_state('networkidle', timeout=10000)
+        page.goto(f"{url}/login", wait_until='networkidle', timeout=30000)
         time.sleep(2)
         
-        print("✅ Connecté à TunisiaBeds")
-        return True
+        # Fill username (id="username", name="_username")
+        page.fill('#username', username)
+        time.sleep(0.5)
+        
+        # Fill password (id="password", name="_password")
+        page.fill('#password', password)
+        time.sleep(0.5)
+        
+        # Click submit button
+        page.click('.fxt-btn-fill')
+        
+        page.wait_for_load_state('networkidle', timeout=15000)
+        time.sleep(2)
+        
+        # Check if login was successful
+        if '/login' not in page.url:
+            print("✅ Connecte a TunisiaBeds")
+            return True
+        else:
+            print("⚠️ Login echoue - verifiez username/password dans config.json")
+            return False
     except Exception as e:
-        print(f"⚠️ Login échoué: {e}")
+        print(f"⚠️ Login erreur: {e}")
         return False
 
 
