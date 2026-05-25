@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TuniStay B2B - Tarifs Hôtels Tunisie pour Agences</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo">
+          <i class="fas fa-hotel"></i>
+          <span>TuniStay <small style="font-size:0.6em; background:#FF6B00; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">B2B</small></span>
+        </a>
+        <nav class="nav">
+          <a href="/" class="nav-link active">Recherche</a>
+          <a href="#" class="nav-link" id="btnFavorites" onclick="toggleFavoritesModal()"><i class="fas fa-heart" style="color:#dc3545;"></i> Mes favoris <span class="fav-count" id="favCount">0</span></a>
+          <a href="/history" class="nav-link"><i class="fas fa-history"></i> Historique</a>
+          <a href="/dashboard" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content">
+        <h1>Tarifs Hôtels Tunisie - Espace Agences</h1>
+        <p>Accédez aux meilleurs tarifs négociés pour vos clients. Sousse, Hammamet, Djerba, Monastir.</p>
+      </div>
+      
+      <!-- Search Form -->
+      <div class="search-box">
+        <form id="searchForm" class="search-form">
+          <div class="search-row">
+            <div class="form-group">
+              <label><i class="fas fa-map-marker-alt"></i> Destination</label>
+              <select id="city" required>
+                <option value="">Choisir une ville</option>
+                <option value="Sousse">Sousse</option>
+                <option value="Hammamet">Hammamet</option>
+                <option value="Djerba">Djerba</option>
+                <option value="Monastir">Monastir</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar"></i> Arrivée</label>
+              <input type="date" id="checkIn" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar-check"></i> Départ</label>
+              <input type="date" id="checkOut" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Adultes</label>
+              <select id="adults">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-child"></i> Enfants</label>
+              <select id="children">
+                <option value="0" selected>0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn-search">
+                <i class="fas fa-search"></i> Rechercher
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="results-section" id="resultsSection" style="display: none;">
+    <div class="container">
+      <!-- Agency Markup Controls -->
+      <div class="markup-box">
+        <div class="markup-title"><i class="fas fa-percentage"></i> Votre marge (optionnel)</div>
+        <div class="markup-controls">
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="none" checked> Sans marge
+          </label>
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="percent"> Pourcentage (%)
+          </label>
+          <label class="markup-radio">
+            <input type="radio" name="markupType" value="fixed"> Montant fixe (DZD)
+          </label>
+          <input type="number" id="markupValue" class="markup-input" placeholder="0" min="0" disabled>
+        </div>
+        <p class="markup-hint">Ajoutez votre marge pour afficher le prix final à proposer à vos clients</p>
+      </div>
+
+      <div class="results-header">
+        <h2 id="resultsTitle"></h2>
+        <div class="results-filters">
+          <button class="filter-btn active" data-sort="recommended">Recommandé</button>
+          <button class="filter-btn" data-sort="price-asc">Prix ↑</button>
+          <button class="filter-btn" data-sort="price-desc">Prix ↓</button>
+          <button class="filter-btn" data-sort="stars">Étoiles</button>
+        </div>
+      </div>
+      <div class="results-grid" id="resultsGrid"></div>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading" style="display: none;">
+    <div class="spinner"></div>
+    <p>Recherche des meilleurs tarifs...</p>
+  </div>
+
+  <!-- Booking Modal -->
+  <div class="modal-overlay" id="bookingModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-bookmark"></i> Réservation pour votre client</h3>
+        <button class="modal-close" onclick="closeBookingModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="booking-summary" id="bookingSummary"></div>
+        
+        <form id="bookingForm">
+          <h4><i class="fas fa-building"></i> Votre agence</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom de l'agence</label>
+              <input type="text" id="agencyName" placeholder="Votre agence">
+            </div>
+            <div class="form-group">
+              <label>Tél agence</label>
+              <input type="tel" id="agencyPhone" placeholder="+213 XX XXX XXXX">
+            </div>
+          </div>
+
+          <h4><i class="fas fa-user"></i> Informations du client</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom complet du client *</label>
+              <input type="text" id="clientName" placeholder="Nom et prénom du voyageur" required>
+            </div>
+            <div class="form-group">
+              <label>Téléphone du client *</label>
+              <input type="tel" id="clientPhone" placeholder="+213 XX XXX XXXX" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email du client</label>
+            <input type="email" id="clientEmail" placeholder="email@client.com">
+          </div>
+          <div class="form-group">
+            <label>Notes / Demandes spéciales</label>
+            <textarea id="clientNotes" placeholder="Chambre vue mer, lit bébé, etc."></textarea>
+          </div>
+
+          <div class="payment-info">
+            <h4><i class="fas fa-money-bill-wave"></i> Paiement</h4>
+            <p>Après confirmation, le paiement peut se faire par :</p>
+            <div class="payment-methods">
+              <span class="payment-badge"><i class="fas fa-money-bill"></i> CCP</span>
+              <span class="payment-badge"><i class="fas fa-mobile-alt"></i> BaridiMob</span>
+              <span class="payment-badge"><i class="fas fa-hand-holding-usd"></i> Espèces</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-confirm">
+            <i class="fab fa-whatsapp"></i> Envoyer la demande via WhatsApp
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Pourquoi travailler avec nous ?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-tags"></i></div>
+          <h3>Tarifs Négociés</h3>
+          <p>Prix exclusifs sur les hôtels tunisiens grâce à nos partenariats directs</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+          <h3>Confirmation Rapide</h3>
+          <p>Réponse en moins de 2h sur la disponibilité et confirmation</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-hand-holding-usd"></i></div>
+          <h3>Paiement Flexible</h3>
+          <p>CCP, BaridiMob ou espèces - on s'adapte à vos clients</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-headset"></i></div>
+          <h3>Support Dédié</h3>
+          <p>Un interlocuteur unique pour toutes vos réservations</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3><i class="fas fa-hotel"></i> TuniStay B2B</h3>
+          <p>Votre partenaire pour les réservations hôtelières en Tunisie.<br>Plateforme réservée aux agences de voyage.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Destinations</h4>
+          <a href="#" onclick="searchCity('Sousse')">Sousse</a>
+          <a href="#" onclick="searchCity('Hammamet')">Hammamet</a>
+          <a href="#" onclick="searchCity('Djerba')">Djerba</a>
+          <a href="#" onclick="searchCity('Monastir')">Monastir</a>
+        </div>
+        <div class="footer-links">
+          <h4>Contact</h4>
+          <a href="#"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="#"><i class="fab fa-facebook"></i> Facebook</a>
+          <a href="#"><i class="fas fa-envelope"></i> Email</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 TuniStay - Plateforme B2B - Tous droits réservés</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Favorites Modal -->
+  <div class="modal-overlay" id="favoritesModal" style="display: none;">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-heart" style="color:#dc3545;"></i> Mes Favoris</h3>
+        <button class="modal-close" onclick="closeFavoritesModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="favoritesContent">
+        <p>Aucun favori enregistré.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotel Detail Modal -->
+  <div class="modal-overlay" id="hotelDetailModal" style="display: none;">
+    <div class="modal" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 id="detailModalTitle"><i class="fas fa-hotel"></i> Détails de l'hôtel</h3>
+        <button class="modal-close" onclick="closeHotelDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="hotelDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- Comparison Modal -->
+  <div class="modal-overlay" id="comparisonModal" style="display: none;">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-balance-scale"></i> Comparaison des hôtels</h3>
+        <button class="modal-close" onclick="closeComparisonModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="comparisonContent"></div>
+    </div>
+  </div>
+
+  <!-- Floating Comparison Bar -->
+  <div class="comparison-bar" id="comparisonBar" style="display: none;">
+    <div class="comparison-bar-content">
+      <span id="comparisonBarText">0 hôtel(s) sélectionné(s)</span>
+      <div class="comparison-bar-actions">
+        <button class="btn-compare" onclick="showComparison()"><i class="fas fa-balance-scale"></i> Comparer</button>
+        <button class="btn-compare-clear" onclick="clearComparison()"><i class="fas fa-times"></i> Effacer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Confirmation Modal -->
+  <div class="modal-overlay" id="pdfConfirmModal" style="display: none;">
+    <div class="modal" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Réservation envoyée !</h3>
+        <button class="modal-close" onclick="closePdfModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="pdfConfirmContent"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

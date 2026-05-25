@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historique des réservations - TuniStay B2B</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="/" class="logo">
+          <i class="fas fa-hotel"></i>
+          <span>TuniStay <small style="font-size:0.6em; background:#FF6B00; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">B2B</small></span>
+        </a>
+        <nav class="nav">
+          <a href="/" class="nav-link">Recherche</a>
+          <a href="/history" class="nav-link active"><i class="fas fa-history"></i> Historique</a>
+          <a href="/dashboard" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- Main Content -->
+  <div class="history-container">
+    <h1 style="margin-bottom: 10px; color: var(--dark);"><i class="fas fa-history" style="color:var(--primary);"></i> Historique des réservations</h1>
+    <p style="color: var(--gray); margin-bottom: 25px;">Toutes vos demandes de réservation effectuées depuis ce navigateur.</p>
+
+    <!-- Filters -->
+    <div class="history-filters">
+      <button class="history-filter-btn active" data-filter="all" onclick="filterHistory('all', this)">Toutes</button>
+      <button class="history-filter-btn" data-filter="pending" onclick="filterHistory('pending', this)">En Attente</button>
+      <button class="history-filter-btn" data-filter="confirmed" onclick="filterHistory('confirmed', this)">Confirmées</button>
+      <button class="history-filter-btn" data-filter="paid" onclick="filterHistory('paid', this)">Payées</button>
+      <button class="history-filter-btn" data-filter="cancelled" onclick="filterHistory('cancelled', this)">Annulées</button>
+    </div>
+
+    <!-- History List -->
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2025 TuniStay - Plateforme B2B - Tous droits réservés</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/history.js"></script>
+</body>
+</html>
