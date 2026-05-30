@@ -310,6 +310,7 @@ function selectJuiceMode(mode) {
             showScreen('juice-size-screen');
         } else if (mode === 'mix_ready') {
             showScreen('mix-ready-screen');
+            renderReadyMixes();
         }
     }, 300);
 }
