@@ -1,558 +1,746 @@
 /* ========================================
-   ذوق فروتس - Dhawq Fruits App
-   المنطق البرمجي الكامل
+   ذوق فروتس - Dhawq Fruits App v2.0
+   نظام طلب المشروبات الاحترافي
    ======================================== */
 
 // ========================================
-// بيانات المنتجات - Products Data
+// قاعدة بيانات المنتجات الكاملة من المينيو
 // ========================================
 
-const PRODUCTS = {
-    // العصائر الطبيعية (Fresh Juice)
-    fruits: [
-        { id: 'orange', name: 'برتقال', emoji: '🍊', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'lemon', name: 'ليمون', emoji: '🍋', prices: { M: 250, L: 300, '1L': 500 }, category: 'regular' },
-        { id: 'mandarin', name: 'يوسفي', emoji: '🍊', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'strawberry', name: 'فراولة', emoji: '🍓', prices: { M: 350, L: 400, '1L': 700 }, category: 'regular' },
-        { id: 'apple', name: 'تفاح', emoji: '🍏', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'pomegranate', name: 'رمان', emoji: '🫐', prices: { M: 350, L: 400, '1L': 700 }, category: 'regular' },
-        { id: 'pear', name: 'إجاص', emoji: '🍐', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'apricot', name: 'مشمش', emoji: '🍑', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'peach', name: 'خوخ', emoji: '🍑', prices: { M: 350, L: 400, '1L': 700 }, category: 'regular' },
-        { id: 'melon', name: 'شمام', emoji: '🍈', prices: { M: 350, L: 400, '1L': 700 }, category: 'regular' },
-        { id: 'watermelon', name: 'بطيخ', emoji: '🍉', prices: { M: 300, L: 350, '1L': 600 }, category: 'regular' },
-        { id: 'grape', name: 'عنب', emoji: '🍇', prices: { M: 700, L: 900, '1L': 1600 }, category: 'premium' },
-        { id: 'cherry', name: 'كرز', emoji: '🍒', prices: { M: 350, L: 400, '1L': 700 }, category: 'regular' },
-        { id: 'fig', name: 'تين', emoji: '🫐', prices: { M: 400, L: 450, '1L': 800 }, category: 'regular' },
-        // الفواكه الاستوائية
-        { id: 'kiwi', name: 'كيوي', emoji: '🥝', prices: { M: 500, L: 550, '1L': 1000 }, category: 'tropical' },
-        { id: 'pineapple', name: 'أناناس', emoji: '🍍', prices: { M: 900, L: 1200, '1L': 2000 }, category: 'tropical' },
-        { id: 'avocado', name: 'أفوكادو', emoji: '🥑', prices: { M: 750, L: 950, '1L': 1600 }, category: 'tropical' },
-        { id: 'banana', name: 'موز', emoji: '🍌', prices: { M: 300, L: 350, '1L': 600 }, category: 'tropical' },
-        { id: 'mango', name: 'مانجو', emoji: '🥭', prices: { M: 900, L: 1200, '1L': 2000 }, category: 'tropical' },
-        { id: 'dragonfruit', name: 'فاكهة التنين', emoji: '🐉', prices: { M: 750, L: 900, '1L': 1500 }, category: 'tropical' },
-    ],
+const DATA = {
 
-    // ميلك شيك - شوكولاتة
+
+    // ========== أسعار الفواكه المفردة (من المينيو) ==========
+    fruits: {
+        orange:      { name: 'برتقال',        emoji: '🍊', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        lemon:       { name: 'ليمون',         emoji: '🍋', M: 250, L: 300, '1L': 500,  cat: 'regular' },
+        mandarin:    { name: 'يوسفي',         emoji: '🍊', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        strawberry:  { name: 'فراولة',        emoji: '🍓', M: 350, L: 400, '1L': 700,  cat: 'regular' },
+        apple:       { name: 'تفاح',          emoji: '🍏', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        pomegranate: { name: 'رمان',          emoji: '🍎', M: 350, L: 400, '1L': 700,  cat: 'regular' },
+        pear:        { name: 'إجاص',          emoji: '🍐', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        apricot:     { name: 'مشمش',          emoji: '🍑', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        peach:       { name: 'خوخ',           emoji: '🍑', M: 350, L: 400, '1L': 700,  cat: 'regular' },
+        melon:       { name: 'شمام',          emoji: '🍈', M: 350, L: 400, '1L': 700,  cat: 'regular' },
+        watermelon:  { name: 'بطيخ',          emoji: '🍉', M: 300, L: 350, '1L': 600,  cat: 'regular' },
+        grape:       { name: 'عنب',           emoji: '🍇', M: 700, L: 900, '1L': 1600, cat: 'premium' },
+        cherry:      { name: 'كرز',           emoji: '🍒', M: 350, L: 400, '1L': 700,  cat: 'regular' },
+        fig:         { name: 'تين',           emoji: '🫐', M: 400, L: 450, '1L': 800,  cat: 'regular' },
+        kiwi:        { name: 'كيوي',          emoji: '🥝', M: 500, L: 550, '1L': 1000, cat: 'tropical' },
+        pineapple:   { name: 'أناناس',        emoji: '🍍', M: 900, L: 1200,'1L': 2000, cat: 'tropical' },
+        avocado:     { name: 'أفوكادو',       emoji: '🥑', M: 750, L: 950, '1L': 1600, cat: 'tropical' },
+        banana:      { name: 'موز',           emoji: '🍌', M: 300, L: 350, '1L': 600,  cat: 'tropical' },
+        mango:       { name: 'مانجو',         emoji: '🥭', M: 900, L: 1200,'1L': 2000, cat: 'tropical' },
+        dragonfruit: { name: 'فاكهة التنين',  emoji: '🐉', M: 750, L: 900, '1L': 1500, cat: 'tropical' },
+    },
+
+
+    // ========== الخلطات الجاهزة (أسعار ثابتة من المينيو) ==========
+    mixes: {
+        // خلطة فاكهتين
+        two: [
+            { id: 'mix_lemon_mint', name: 'ليمون + نعناع', fruits: ['lemon'], emoji: '🍋🌿', '0.5L': 300, '1L': 500 },
+            { id: 'mix_mango_orange', name: 'مانجو + برتقال', fruits: ['mango','orange'], emoji: '🥭🍊', '0.5L': 1200, '1L': 2200 },
+            { id: 'mix_orange_banana', name: 'برتقال + موز أو فراولة', fruits: ['orange','banana'], emoji: '🍊🍌', '0.5L': 450, '1L': 800 },
+            { id: 'mix_lemon_apple', name: 'ليمون + تفاح أو إجاص', fruits: ['lemon','apple'], emoji: '🍋🍏', '0.5L': 400, '1L': 750 },
+            { id: 'mix_kiwi_banana', name: 'كيوي + موز', fruits: ['kiwi','banana'], emoji: '🥝🍌', '0.5L': 600, '1L': 1100 },
+            { id: 'mix_ginger_orange', name: 'زنجبيل + برتقال أو ليمون', fruits: ['orange'], emoji: '🫚🍊', '0.5L': 500, '1L': 900 },
+        ],
+        // خلطة 3 فواكه
+        three: [
+            { id: 'mix_avocado_banana_kiwi', name: 'أفوكادو + موز + كيوي', fruits: ['avocado','banana','kiwi'], emoji: '🥑🍌🥝', '0.5L': 1200, '1L': 1950 },
+            { id: 'mix_apple_pear_lemon', name: 'تفاح + إجاص + ليمون', fruits: ['apple','pear','lemon'], emoji: '🍏🍐🍋', '0.5L': 450, '1L': 800 },
+            { id: 'mix_apple_kiwi_mint', name: 'تفاح + كيوي + نعناع', fruits: ['apple','kiwi'], emoji: '🍏🥝🌿', '0.5L': 600, '1L': 1100 },
+            { id: 'mix_banana_orange_strawberry', name: 'موز + برتقال + فراولة', fruits: ['banana','orange','strawberry'], emoji: '🍌🍊🍓', '0.5L': 450, '1L': 800 },
+            { id: 'mix_pineapple_kiwi_banana', name: 'أناناس + كيوي + موز', fruits: ['pineapple','kiwi','banana'], emoji: '🍍🥝🍌', '0.5L': 1200, '1L': 2000 },
+            { id: 'mix_mango_avocado_orange', name: 'مانجو + أفوكادو + برتقال', fruits: ['mango','avocado','orange'], emoji: '🥭🥑🍊', '0.5L': 1400, '1L': 2400 },
+            { id: 'mix_dragon_banana_orange', name: 'فاكهة التنين + موز + برتقال', fruits: ['dragonfruit','banana','orange'], emoji: '🐉🍌🍊', '0.5L': 900, '1L': 1500 },
+        ],
+        // خلطة 4 فواكه
+        four: [
+            { id: 'mix_kiwi_straw_lemon_banana', name: 'كيوي + فراولة + ليمون + موز', fruits: ['kiwi','strawberry','lemon','banana'], emoji: '🥝🍓🍋🍌', '0.5L': 700, '1L': 1200 },
+            { id: 'mix_avocado_orange_ginger', name: 'أفوكادو + برتقال + زنجبيل + عسل', fruits: ['avocado','orange'], emoji: '🥑🍊🫚🍯', '0.5L': 950, '1L': 1600 },
+            { id: 'mix_orange_banana_apple_straw', name: 'برتقال + موز + تفاح + فراولة', fruits: ['orange','banana','apple','strawberry'], emoji: '🍊🍌🍏🍓', '0.5L': 450, '1L': 800 },
+            { id: 'mix_pineapple_banana_lemon_straw', name: 'أناناس + موز + ليمون + فراولة', fruits: ['pineapple','banana','lemon','strawberry'], emoji: '🍍🍌🍋🍓', '0.5L': 1200, '1L': 2000 },
+        ],
+    },
+
+
+    // ========== ميلك شيك - شوكولاتة ==========
     milkshake_choco: [
-        { id: 'choco', name: 'شوكو', emoji: '🍫', prices: { M: 550, L: 600, '1L': 1100 }, desc: 'Mars, Bounty, Snickers, KitKat' },
-        { id: 'cookies', name: 'كوكيز', emoji: '🍪', prices: { M: 350, L: 400, '1L': 700 }, desc: 'Lotus, Biscoff' },
-        { id: 'raffa_ferrero', name: 'رفاييلو & فيريرو', emoji: '🍬', prices: { M: 600, L: 650, '1L': 1200 }, desc: 'Raffaello, Ferrero' },
-        { id: 'caramel', name: 'كراميل', emoji: '🍯', prices: { M: 400, L: 450, '1L': 800 }, desc: 'Caramel Cream' },
-        { id: 'nuts', name: 'مكسرات', emoji: '🥜', prices: { M: 450, L: 500, '1L': 900 }, desc: 'Mixed Nuts' },
+        { id: 'choco',    name: 'شوكو',              emoji: '🍫', M: 550, L: 600, '1L': 1100, desc: 'Mars, Bounty, Snickers, KitKat, Twix' },
+        { id: 'cookies',  name: 'كوكيز',             emoji: '🍪', M: 350, L: 400, '1L': 700,  desc: 'Lotus, Biscoff, Oreo' },
+        { id: 'raffa',    name: 'رفاييلو & فيريرو',  emoji: '🍬', M: 600, L: 650, '1L': 1200, desc: 'Raffaello, Ferrero Rocher' },
+        { id: 'caramel',  name: 'كراميل',            emoji: '🍯', M: 400, L: 450, '1L': 800,  desc: 'Caramel Cream' },
+        { id: 'nuts_ms',  name: 'مكسرات',            emoji: '🥜', M: 450, L: 500, '1L': 900,  desc: 'Mixed Nuts Blend' },
     ],
 
-    // ميلك شيك - فواكه
+    // ========== ميلك شيك - فواكه ==========
     milkshake_fruits: [
-        { id: 'ms_strawberry', name: 'فراولة', emoji: '🍓', prices: { M: 400, L: 450, '1L': 800 } },
-        { id: 'ms_banana', name: 'موز', emoji: '🍌', prices: { M: 350, L: 400, '1L': 700 } },
-        { id: 'ms_kiwi', name: 'كيوي', emoji: '🥝', prices: { M: 500, L: 550, '1L': 1000 } },
-        { id: 'ms_blueberry', name: 'توت', emoji: '🫐', prices: { M: 450, L: 500, '1L': 900 } },
-        { id: 'ms_pistachio', name: 'بيستاشيو', emoji: '🌰', prices: { M: 450, L: 500, '1L': 900 } },
-        { id: 'ms_coconut', name: 'جوز الهند', emoji: '🥥', prices: { M: 400, L: 450, '1L': 800 } },
+        { id: 'ms_strawberry', name: 'فراولة',    emoji: '🍓', M: 400, L: 450, '1L': 800 },
+        { id: 'ms_banana',     name: 'موز',       emoji: '🍌', M: 350, L: 400, '1L': 700 },
+        { id: 'ms_kiwi',       name: 'كيوي',      emoji: '🥝', M: 500, L: 550, '1L': 1000 },
+        { id: 'ms_blueberry',  name: 'توت',       emoji: '🫐', M: 450, L: 500, '1L': 900 },
+        { id: 'ms_pistachio',  name: 'بيستاشيو',  emoji: '🌰', M: 450, L: 500, '1L': 900 },
+        { id: 'ms_coconut',    name: 'جوز الهند',  emoji: '🥥', M: 400, L: 450, '1L': 800 },
     ],
 
-    // الإضافات - فروي
-    extras_fruity: [
-        { id: 'raisin', name: 'زبيب', emoji: '🫐', price: 100 },
-        { id: 'nuts_extra', name: 'مكسرات', emoji: '🥜', price: 150 },
-        { id: 'honey', name: 'عسل', emoji: '🍯', price: 100 },
-        { id: 'date_syrup', name: 'دبس التمر', emoji: '🍶', price: 100 },
-        { id: 'deglet', name: 'دقلة', emoji: '🌴', price: 50 },
+    // ========== خلطات ميلك شيك جاهزة ==========
+    milkshake_mixes: [
+        { id: 'msmix_lotus_caramel',    name: 'Lotus + كراميل',        emoji: '🍪🍯', M: 500, L: 600, '1L': 1050 },
+        { id: 'msmix_lotus_coconut',    name: 'Lotus + جوز الهند',     emoji: '🍪🥥', M: 500, L: 600, '1L': 1050 },
+        { id: 'msmix_nutella_snickers', name: 'Nutella + Snickers',    emoji: '🍫🍫', M: 600, L: 700, '1L': 1250 },
+        { id: 'msmix_bounty_pistachio', name: 'Bounty + Pistachio',    emoji: '🍫🌰', M: 550, L: 650, '1L': 1150 },
+        { id: 'msmix_cookies_caramel',  name: 'Cookies + كراميل',      emoji: '🍪🍯', M: 500, L: 550, '1L': 1000 },
+        { id: 'msmix_kiwi_straw_banana',name: 'كيوي + فراولة + موز',   emoji: '🥝🍓🍌', M: 550, L: 650, '1L': 1150 },
+        { id: 'msmix_oreo_nutella',     name: 'Oreo + Nutella',        emoji: '🍪🍫', M: 550, L: 650, '1L': 1150 },
+        { id: 'msmix_nutella_banana',   name: 'Nutella + موز',         emoji: '🍫🍌', M: 500, L: 600, '1L': 1050 },
     ],
 
-    // الإضافات - ميلك شيك
+
+    // ========== الإضافات - عصائر ==========
+    extras_juice: [
+        { id: 'ex_raisin',     name: 'زبيب',       emoji: '🫐', price: 100 },
+        { id: 'ex_nuts',       name: 'مكسرات',     emoji: '🥜', price: 150 },
+        { id: 'ex_honey',      name: 'عسل',        emoji: '🍯', price: 100 },
+        { id: 'ex_date_syrup', name: 'دبس التمر',  emoji: '🍶', price: 100 },
+        { id: 'ex_deglet',     name: 'دقلة',       emoji: '🌴', price: 50 },
+    ],
+
+    // ========== الإضافات - ميلك شيك ==========
     extras_milkshake: [
-        { id: 'ms_raisin', name: 'زبيب', emoji: '🫐', price: 100 },
-        { id: 'ms_nuts', name: 'مكسرات', emoji: '🥜', price: 150 },
-        { id: 'ms_honey', name: 'عسل', emoji: '🍯', price: 100 },
-        { id: 'ms_coconut_extra', name: 'جوز الهند', emoji: '🥥', price: 100 },
-        { id: 'ms_fruits_extra', name: 'فواكه', emoji: '🍓', price: 100 },
-        { id: 'ms_choco_extra', name: 'شوكو (نوتيلا)', emoji: '🍫', price: 250 },
-        { id: 'ms_oat', name: 'شوفان', emoji: '🌾', price: 50 },
-        { id: 'ms_date_syrup', name: 'دبس التمر', emoji: '🍶', price: 100 },
-        { id: 'ms_deglet', name: 'دقلة', emoji: '🌴', price: 50 },
-    ]
+        { id: 'exm_raisin',     name: 'زبيب',           emoji: '🫐', price: 100 },
+        { id: 'exm_nuts',       name: 'مكسرات',         emoji: '🥜', price: 150 },
+        { id: 'exm_honey',      name: 'عسل',            emoji: '🍯', price: 100 },
+        { id: 'exm_coconut',    name: 'جوز الهند',       emoji: '🥥', price: 100 },
+        { id: 'exm_fruits',     name: 'فواكه',          emoji: '🍓', price: 100 },
+        { id: 'exm_choco',      name: 'شوكو (نوتيلا)',  emoji: '🍫', price: 250 },
+        { id: 'exm_oat',        name: 'شوفان',          emoji: '🌾', price: 50 },
+        { id: 'exm_date_syrup', name: 'دبس التمر',      emoji: '🍶', price: 100 },
+        { id: 'exm_deglet',     name: 'دقلة',           emoji: '🌴', price: 50 },
+    ],
+
+    // ========== أحجام الأكواب ==========
+    sizes: {
+        juice: ['M', 'L', '1L'],
+        milkshake: ['M', 'L', '1L'],
+        mix_sizes: ['0.5L', '1L']
+    }
 };
 
 // ========================================
-// حالة التطبيق - App State
+// حالة التطبيق
 // ========================================
 
-let order = {
-    type: null,          // 'fruity' أو 'milkshake'
-    size: null,          // 'M', 'L', '1L'
-    base: null,          // 'water', 'milk', 'orange' (فروي فقط)
-    milkshakeCategory: null, // 'choco' أو 'fruits' (ميلك شيك فقط)
-    ingredients: [],     // المكونات المختارة
-    extras: [],          // الإضافات المختارة
-    price: 0            // السعر الإجمالي
+let state = {
+    currentScreen: 'welcome',
+    cart: [],  // سلة الطلبات (يمكن إضافة أكثر من مشروب)
+    currentItem: null,  // المشروب الحالي قيد البناء
 };
 
+function resetCurrentItem() {
+    state.currentItem = {
+        type: null,         // 'juice' | 'milkshake'
+        mode: null,         // 'single' | 'mix_ready' | 'mix_custom' | 'ms_choco' | 'ms_fruit' | 'ms_mix_ready'
+        size: null,         // 'M' | 'L' | '1L' | '0.5L'
+        base: null,         // 'water' | 'milk' | 'orange' (juice only)
+        selectedFruits: [], // اختيار الفواكه (للخلطة المخصصة)
+        selectedMix: null,  // الخلطة الجاهزة المختارة
+        selectedItem: null, // ميلك شيك مفرد
+        extras: [],         // الإضافات
+        price: 0,           // السعر المحسوب
+        name: '',           // اسم المشروب للعرض
+    };
+}
+
+
 // ========================================
-// التنقل بين الشاشات - Navigation
+// نظام التسعير الصحيح
 // ========================================
 
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    window.scrollTo(0, 0);
+function calculatePrice() {
+    const item = state.currentItem;
+    if (!item) return 0;
+
+    let basePrice = 0;
+
+    // === خلطة جاهزة (سعر ثابت من المينيو) ===
+    if (item.mode === 'mix_ready' && item.selectedMix) {
+        basePrice = item.selectedMix[item.size] || 0;
+    }
+    // === ميلك شيك خلطة جاهزة ===
+    else if (item.mode === 'ms_mix_ready' && item.selectedMix) {
+        basePrice = item.selectedMix[item.size] || 0;
+    }
+    // === عصير فاكهة واحدة ===
+    else if (item.mode === 'single' && item.selectedFruits.length === 1) {
+        const fruit = DATA.fruits[item.selectedFruits[0]];
+        if (fruit) basePrice = fruit[item.size] || 0;
+    }
+    // === خلطة مخصصة (2-5 فواكه) ===
+    else if (item.mode === 'mix_custom' && item.selectedFruits.length > 0) {
+        basePrice = calculateCustomMixPrice(item.selectedFruits, item.size);
+    }
+    // === ميلك شيك شوكولاتة ===
+    else if (item.mode === 'ms_choco' && item.selectedItem) {
+        const choco = DATA.milkshake_choco.find(c => c.id === item.selectedItem);
+        if (choco) basePrice = choco[item.size] || 0;
+    }
+    // === ميلك شيك فواكه ===
+    else if (item.mode === 'ms_fruit' && item.selectedItem) {
+        const fruit = DATA.milkshake_fruits.find(f => f.id === item.selectedItem);
+        if (fruit) basePrice = fruit[item.size] || 0;
+    }
+
+    // إضافة سعر الإضافات
+    let extrasPrice = 0;
+    const extrasList = item.type === 'juice' ? DATA.extras_juice : DATA.extras_milkshake;
+    item.extras.forEach(exId => {
+        const ex = extrasList.find(e => e.id === exId);
+        if (ex) extrasPrice += ex.price;
+    });
+
+    item.price = basePrice + extrasPrice;
+    return item.price;
+}
+
+// حساب سعر الخلطة المخصصة
+// المنطق: نبحث عن أقرب خلطة جاهزة مشابهة، وإن لم نجد نستخدم:
+// السعر = أغلى فاكهة (كاملة) + 50% من سعر كل فاكهة إضافية
+function calculateCustomMixPrice(fruitIds, size) {
+    if (fruitIds.length === 1) {
+        const f = DATA.fruits[fruitIds[0]];
+        return f ? (f[size] || 0) : 0;
+    }
+
+    // محاولة مطابقة خلطة جاهزة
+    const matchedMix = findMatchingMix(fruitIds);
+    if (matchedMix && matchedMix[size]) {
+        return matchedMix[size];
+    }
+
+    // حساب مخصص: أغلى فاكهة كاملة + 50% من كل فاكهة إضافية
+    const prices = fruitIds.map(id => {
+        const f = DATA.fruits[id];
+        return f ? (f[size] || 0) : 0;
+    }).sort((a, b) => b - a);
+
+    let total = prices[0]; // أغلى فاكهة كاملة
+    for (let i = 1; i < prices.length; i++) {
+        total += Math.round(prices[i] * 0.50);
+    }
+
+    // تقريب إلى أقرب 50
+    return Math.round(total / 50) * 50;
+}
+
+
+// البحث عن خلطة جاهزة مطابقة
+function findMatchingMix(fruitIds) {
+    const allMixes = [...DATA.mixes.two, ...DATA.mixes.three, ...DATA.mixes.four];
+    const sortedInput = [...fruitIds].sort().join(',');
+
+    for (const mix of allMixes) {
+        const sortedMix = [...mix.fruits].sort().join(',');
+        if (sortedMix === sortedInput) return mix;
+    }
+    return null;
+}
+
+// ========================================
+// التنقل بين الشاشات
+// ========================================
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+        s.classList.remove('slide-in');
+    });
+    const screen = document.getElementById(id);
+    if (screen) {
+        screen.classList.add('active', 'slide-in');
+        state.currentScreen = id;
+        window.scrollTo(0, 0);
+    }
 }
 
 function goBack(screenId) {
     showScreen(screenId);
 }
 
-function goBackFromIngredients() {
-    if (order.type === 'fruity') {
-        showScreen('base-screen');
-    } else {
-        showScreen('milkshake-category-screen');
-    }
-}
+// ========================================
+// بدء الطلب
+// ========================================
 
 function startOrder() {
+    resetCurrentItem();
     showScreen('type-screen');
 }
 
 function newOrder() {
-    order = {
-        type: null,
-        size: null,
-        base: null,
-        milkshakeCategory: null,
-        ingredients: [],
-        extras: [],
-        price: 0
-    };
+    state.cart = [];
+    resetCurrentItem();
     showScreen('welcome-screen');
 }
 
 // ========================================
-// اختيار نوع المشروب - Select Type
+// اختيار نوع المشروب
 // ========================================
 
 function selectType(type) {
-    order.type = type;
-    order.ingredients = [];
-    order.extras = [];
-    
-    // تأثير بصري
-    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector(`[data-type="${type}"]`)?.classList.add('selected');
-    
+    state.currentItem.type = type;
+    animateSelection('.type-card', `[data-type="${type}"]`);
     setTimeout(() => {
-        showScreen('size-screen');
-    }, 300);
-}
-
-// ========================================
-// اختيار الحجم - Select Size
-// ========================================
-
-function selectSize(size) {
-    order.size = size;
-    
-    document.querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector(`[data-size="${size}"]`)?.classList.add('selected');
-    
-    setTimeout(() => {
-        if (order.type === 'fruity') {
-            showScreen('base-screen');
+        if (type === 'juice') {
+            showScreen('juice-mode-screen');
         } else {
-            showScreen('milkshake-category-screen');
+            showScreen('milkshake-mode-screen');
         }
     }, 300);
 }
 
 // ========================================
-// اختيار القاعدة - Select Base
+// اختيار وضع العصير
+// ========================================
+
+function selectJuiceMode(mode) {
+    state.currentItem.mode = mode;
+    setTimeout(() => {
+        if (mode === 'single' || mode === 'mix_custom') {
+            showScreen('juice-size-screen');
+        } else if (mode === 'mix_ready') {
+            showScreen('mix-ready-screen');
+        }
+    }, 300);
+}
+
+// ========================================
+// اختيار حجم العصير
+// ========================================
+
+function selectJuiceSize(size) {
+    state.currentItem.size = size;
+    animateSelection('.size-card', `[data-size="${size}"]`);
+    setTimeout(() => {
+        showScreen('juice-base-screen');
+    }, 300);
+}
+
+// اختيار حجم الخلطة الجاهزة
+function selectMixSize(size) {
+    state.currentItem.size = size;
+    animateSelection('.size-card', `[data-size="${size}"]`);
+    setTimeout(() => {
+        showScreen('extras-screen');
+        renderExtras();
+    }, 300);
+}
+
+// ========================================
+// اختيار القاعدة
 // ========================================
 
 function selectBase(base) {
-    order.base = base;
-    
-    document.querySelectorAll('.base-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector(`[data-base="${base}"]`)?.classList.add('selected');
-    
+    state.currentItem.base = base;
+    animateSelection('.base-card', `[data-base="${base}"]`);
     setTimeout(() => {
-        setupIngredientsScreen();
-        showScreen('ingredients-screen');
+        showScreen('fruits-screen');
+        renderFruits();
     }, 300);
 }
 
-// ========================================
-// فئة الميلك شيك - Milkshake Category
-// ========================================
-
-function selectMilkshakeCategory(category) {
-    order.milkshakeCategory = category;
-    
-    setTimeout(() => {
-        setupIngredientsScreen();
-        showScreen('ingredients-screen');
-    }, 300);
-}
 
 // ========================================
-// إعداد شاشة المكونات - Setup Ingredients
+// الخلطات الجاهزة
 // ========================================
 
-function setupIngredientsScreen() {
-    const grid = document.getElementById('ingredients-grid');
-    const title = document.getElementById('ingredients-title');
-    const subtitle = document.getElementById('ingredients-subtitle');
-    const countMax = document.getElementById('count-max');
-    
-    let items = [];
-    let maxSelection = 5;
-    
-    if (order.type === 'fruity') {
-        items = PRODUCTS.fruits;
-        title.textContent = 'اختر الفواكه';
-        subtitle.textContent = 'يمكنك اختيار من 1 إلى 5 فواكه';
-        maxSelection = 5;
-    } else if (order.milkshakeCategory === 'choco') {
-        items = PRODUCTS.milkshake_choco;
-        title.textContent = 'اختر نوع الشوكولاتة';
-        subtitle.textContent = 'اختر نوع واحد';
-        maxSelection = 1;
-    } else {
-        items = PRODUCTS.milkshake_fruits;
-        title.textContent = 'اختر الفاكهة';
-        subtitle.textContent = 'اختر نوع واحد';
-        maxSelection = 1;
-    }
-    
-    countMax.textContent = maxSelection;
-    document.getElementById('count-number').textContent = '0';
-    document.getElementById('counter-fill').style.width = '0%';
-    document.getElementById('live-price-value').textContent = '0 د.ج';
-    
-    order.ingredients = [];
-    
-    grid.innerHTML = items.map(item => `
-        <div class="ingredient-card" data-id="${item.id}" onclick="toggleIngredient('${item.id}', ${maxSelection})">
-            <span class="ingredient-emoji">${item.emoji}</span>
-            <span class="ingredient-name">${item.name}</span>
-            <span class="ingredient-price">${item.prices[order.size]} د.ج</span>
+function renderReadyMixes() {
+    const grid = document.getElementById('mixes-grid');
+    if (!grid) return;
+
+    const allMixes = [...DATA.mixes.two, ...DATA.mixes.three, ...DATA.mixes.four];
+    grid.innerHTML = allMixes.map(mix => `
+        <div class="mix-card" data-id="${mix.id}" onclick="selectReadyMix('${mix.id}')">
+            <div class="mix-emoji">${mix.emoji}</div>
+            <div class="mix-name">${mix.name}</div>
+            <div class="mix-price">${mix['0.5L']} - ${mix['1L']} د.ج</div>
         </div>
     `).join('');
-    
-    updateNextButton();
+}
+
+function selectReadyMix(mixId) {
+    const allMixes = [...DATA.mixes.two, ...DATA.mixes.three, ...DATA.mixes.four];
+    const mix = allMixes.find(m => m.id === mixId);
+    if (!mix) return;
+
+    state.currentItem.selectedMix = mix;
+    state.currentItem.name = mix.name;
+    animateSelection('.mix-card', `[data-id="${mixId}"]`);
+
+    setTimeout(() => {
+        showScreen('mix-size-screen');
+    }, 300);
 }
 
 // ========================================
-// تبديل المكونات - Toggle Ingredient
+// اختيار الفواكه (مفردة أو مخصصة)
 // ========================================
 
-function toggleIngredient(id, maxSelection) {
-    const index = order.ingredients.indexOf(id);
-    
-    if (index > -1) {
-        // إزالة
-        order.ingredients.splice(index, 1);
-        document.querySelector(`.ingredient-card[data-id="${id}"]`).classList.remove('selected');
+function renderFruits() {
+    const grid = document.getElementById('fruits-grid');
+    if (!grid) return;
+
+    const size = state.currentItem.size;
+    const maxFruits = state.currentItem.mode === 'single' ? 1 : 5;
+    const subtitle = document.getElementById('fruits-subtitle');
+    if (subtitle) {
+        subtitle.textContent = maxFruits === 1 ? 'اختر فاكهة واحدة' : 'اختر من 1 إلى 5 فواكه لخلطتك';
+    }
+
+    // تصنيف الفواكه
+    const regular = Object.entries(DATA.fruits).filter(([,f]) => f.cat === 'regular');
+    const tropical = Object.entries(DATA.fruits).filter(([,f]) => f.cat === 'tropical');
+    const premium = Object.entries(DATA.fruits).filter(([,f]) => f.cat === 'premium');
+
+    let html = '<div class="fruit-category-label">🍎 فواكه عادية</div><div class="fruits-section">';
+    html += regular.map(([id, f]) => fruitCard(id, f, size)).join('');
+    html += '</div><div class="fruit-category-label">🌴 فواكه استوائية</div><div class="fruits-section">';
+    html += tropical.map(([id, f]) => fruitCard(id, f, size)).join('');
+    html += '</div>';
+    if (premium.length > 0) {
+        html += '<div class="fruit-category-label">⭐ فواكه مميزة</div><div class="fruits-section">';
+        html += premium.map(([id, f]) => fruitCard(id, f, size)).join('');
+        html += '</div>';
+    }
+
+    grid.innerHTML = html;
+    updateFruitCounter();
+}
+
+function fruitCard(id, fruit, size) {
+    const selected = state.currentItem.selectedFruits.includes(id);
+    return `
+        <div class="fruit-card ${selected ? 'selected' : ''}" data-id="${id}" onclick="toggleFruit('${id}')">
+            <span class="fruit-emoji">${fruit.emoji}</span>
+            <span class="fruit-name">${fruit.name}</span>
+            <span class="fruit-price">${fruit[size]} د.ج</span>
+            ${selected ? '<span class="fruit-check">✓</span>' : ''}
+        </div>
+    `;
+}
+
+function toggleFruit(id) {
+    const item = state.currentItem;
+    const maxFruits = item.mode === 'single' ? 1 : 5;
+    const idx = item.selectedFruits.indexOf(id);
+
+    if (idx > -1) {
+        item.selectedFruits.splice(idx, 1);
     } else {
-        // إضافة
-        if (order.ingredients.length >= maxSelection) {
-            if (maxSelection === 1) {
-                // ميلك شيك: استبدال الاختيار
-                const oldId = order.ingredients[0];
-                document.querySelector(`.ingredient-card[data-id="${oldId}"]`)?.classList.remove('selected');
-                order.ingredients = [id];
+        if (item.selectedFruits.length >= maxFruits) {
+            if (maxFruits === 1) {
+                item.selectedFruits = [id];
             } else {
-                // الحد الأقصى
-                shakeElement(document.getElementById('selected-counter'));
+                shakeElement(document.getElementById('fruit-counter'));
                 return;
             }
         } else {
-            order.ingredients.push(id);
+            item.selectedFruits.push(id);
         }
-        document.querySelector(`.ingredient-card[data-id="${id}"]`).classList.add('selected');
     }
-    
-    // تحديث العداد
-    const count = order.ingredients.length;
-    document.getElementById('count-number').textContent = count;
-    document.getElementById('counter-fill').style.width = `${(count / maxSelection) * 100}%`;
-    
-    // تحديث السعر المباشر
+
+    renderFruits();
     updateLivePrice();
-    
-    // تحديث حالة الزر
-    updateNextButton();
-    
-    // تعطيل/تفعيل البطاقات
-    if (order.type === 'fruity') {
-        document.querySelectorAll('.ingredient-card').forEach(card => {
-            if (!card.classList.contains('selected') && count >= maxSelection) {
-                card.classList.add('disabled');
-            } else {
-                card.classList.remove('disabled');
-            }
-        });
-    }
 }
 
-// ========================================
-// حساب سعر الكوكتيل الذكي
-// Smart Cocktail Pricing
-// ========================================
+function updateFruitCounter() {
+    const counter = document.getElementById('fruit-counter');
+    const btn = document.getElementById('btn-fruits-next');
+    const maxFruits = state.currentItem.mode === 'single' ? 1 : 5;
+    const count = state.currentItem.selectedFruits.length;
 
-function calculateCocktailPrice() {
-    if (order.ingredients.length === 0) return 0;
-    
-    const size = order.size;
-    let items;
-    
-    if (order.type === 'fruity') {
-        items = PRODUCTS.fruits;
-    } else if (order.milkshakeCategory === 'choco') {
-        items = PRODUCTS.milkshake_choco;
-    } else {
-        items = PRODUCTS.milkshake_fruits;
+    if (counter) {
+        counter.innerHTML = `<span>${count}</span> / ${maxFruits}`;
+        const fill = document.getElementById('counter-fill');
+        if (fill) fill.style.width = `${(count / maxFruits) * 100}%`;
     }
-    
-    const selectedItems = order.ingredients.map(id => items.find(i => i.id === id)).filter(Boolean);
-    
-    if (selectedItems.length === 0) return 0;
-    if (selectedItems.length === 1) return selectedItems[0].prices[size];
-    
-    // ====================================
-    // نظام التسعير الذكي للكوكتيل V3
-    // ====================================
-    // المبدأ: المتوسط المرجح التصاعدي
-    // - الفاكهة الأغلى تأخذ 55% من وزن السعر (لأنها المكون الرئيسي)
-    // - باقي الفواكه تتقاسم 45% بالتساوي
-    // - هامش 30% + 50 د.ج تكلفة تحضير
-    // - تقريب إلى أقرب 50 د.ج
-    // هذا النظام يتطابق مع أسعار المحل بنسبة ~90%
-    // ====================================
-    
-    const prices = selectedItems.map(item => item.prices[size]);
-    const n = prices.length;
-    
-    // ترتيب الأسعار من الأعلى للأدنى
-    const sortedPrices = [...prices].sort((a, b) => b - a);
-    
-    // الفاكهة الأغلى تأخذ 55%
-    const mainWeight = 0.55;
-    const restWeight = 0.45 / (n - 1);
-    
-    let weightedPrice = sortedPrices[0] * mainWeight;
-    for (let i = 1; i < n; i++) {
-        weightedPrice += sortedPrices[i] * restWeight;
-    }
-    
-    // هامش تحضير (30%) + تكلفة ثابتة
-    const finalPrice = weightedPrice * 1.30 + 50;
-    
-    // تقريب إلى أقرب 50 د.ج
-    return Math.round(finalPrice / 50) * 50;
+    if (btn) btn.disabled = count === 0;
 }
-
-// ========================================
-// تحديث السعر المباشر - Update Live Price
-// ========================================
 
 function updateLivePrice() {
-    const price = calculateCocktailPrice();
-    document.getElementById('live-price-value').textContent = price > 0 ? `${price} د.ج` : '0 د.ج';
+    const el = document.getElementById('live-price-value');
+    if (el) {
+        const price = calculatePrice();
+        el.textContent = price > 0 ? `${price} د.ج` : '---';
+    }
 }
 
-// ========================================
-// تحديث زر التالي - Update Next Button
-// ========================================
-
-function updateNextButton() {
-    const btn = document.getElementById('btn-next-ingredients');
-    btn.disabled = order.ingredients.length === 0;
-}
-
-// ========================================
-// شاشة الإضافات - Setup Extras
-// ========================================
-
-function goToExtras() {
-    setupExtrasScreen();
+function confirmFruits() {
+    const item = state.currentItem;
+    // بناء اسم المشروب
+    const names = item.selectedFruits.map(id => DATA.fruits[id]?.name || '');
+    item.name = names.join(' + ');
     showScreen('extras-screen');
+    renderExtras();
 }
 
-function setupExtrasScreen() {
-    const grid = document.getElementById('extras-grid');
-    const extras = order.type === 'fruity' ? PRODUCTS.extras_fruity : PRODUCTS.extras_milkshake;
-    
-    order.extras = [];
-    
-    grid.innerHTML = extras.map(item => `
-        <div class="extra-card" data-id="${item.id}" onclick="toggleExtra('${item.id}')">
-            <span class="extra-emoji">${item.emoji}</span>
-            <div class="extra-info">
-                <div class="extra-name">${item.name}</div>
-                <div class="extra-price">+${item.price} د.ج</div>
+
+// ========================================
+// ميلك شيك
+// ========================================
+
+function selectMilkshakeMode(mode) {
+    state.currentItem.mode = mode;
+    setTimeout(() => {
+        if (mode === 'ms_choco') {
+            showScreen('ms-choco-screen');
+            renderMsChoco();
+        } else if (mode === 'ms_fruit') {
+            showScreen('ms-fruit-screen');
+            renderMsFruit();
+        } else if (mode === 'ms_mix_ready') {
+            showScreen('ms-mix-screen');
+            renderMsMixes();
+        }
+    }, 300);
+}
+
+function renderMsChoco() {
+    const grid = document.getElementById('ms-choco-grid');
+    if (!grid) return;
+    grid.innerHTML = DATA.milkshake_choco.map(item => `
+        <div class="ms-card" data-id="${item.id}" onclick="selectMsItem('${item.id}', 'choco')">
+            <span class="ms-emoji">${item.emoji}</span>
+            <div class="ms-info">
+                <span class="ms-name">${item.name}</span>
+                <span class="ms-desc">${item.desc}</span>
             </div>
         </div>
     `).join('');
 }
 
+function renderMsFruit() {
+    const grid = document.getElementById('ms-fruit-grid');
+    if (!grid) return;
+    grid.innerHTML = DATA.milkshake_fruits.map(item => `
+        <div class="ms-card" data-id="${item.id}" onclick="selectMsItem('${item.id}', 'fruit')">
+            <span class="ms-emoji">${item.emoji}</span>
+            <div class="ms-info">
+                <span class="ms-name">${item.name}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderMsMixes() {
+    const grid = document.getElementById('ms-mix-grid');
+    if (!grid) return;
+    grid.innerHTML = DATA.milkshake_mixes.map(item => `
+        <div class="ms-card" data-id="${item.id}" onclick="selectMsMix('${item.id}')">
+            <span class="ms-emoji">${item.emoji}</span>
+            <div class="ms-info">
+                <span class="ms-name">${item.name}</span>
+                <span class="ms-price">${item.M} - ${item['1L']} د.ج</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectMsItem(itemId, category) {
+    state.currentItem.selectedItem = itemId;
+    const list = category === 'choco' ? DATA.milkshake_choco : DATA.milkshake_fruits;
+    const item = list.find(i => i.id === itemId);
+    if (item) state.currentItem.name = item.name;
+    animateSelection('.ms-card', `[data-id="${itemId}"]`);
+    setTimeout(() => {
+        showScreen('ms-size-screen');
+    }, 300);
+}
+
+function selectMsMix(mixId) {
+    const mix = DATA.milkshake_mixes.find(m => m.id === mixId);
+    if (!mix) return;
+    state.currentItem.selectedMix = mix;
+    state.currentItem.mode = 'ms_mix_ready';
+    state.currentItem.name = mix.name;
+    animateSelection('.ms-card', `[data-id="${mixId}"]`);
+    setTimeout(() => {
+        showScreen('ms-size-screen');
+    }, 300);
+}
+
+function selectMsSize(size) {
+    state.currentItem.size = size;
+    animateSelection('.size-card', `[data-size="${size}"]`);
+    setTimeout(() => {
+        showScreen('extras-screen');
+        renderExtras();
+    }, 300);
+}
+
+
 // ========================================
-// تبديل الإضافات - Toggle Extra
+// الإضافات
 // ========================================
 
+function renderExtras() {
+    const grid = document.getElementById('extras-grid');
+    if (!grid) return;
+
+    const extras = state.currentItem.type === 'juice' ? DATA.extras_juice : DATA.extras_milkshake;
+    state.currentItem.extras = [];
+
+    grid.innerHTML = extras.map(ex => `
+        <div class="extra-card" data-id="${ex.id}" onclick="toggleExtra('${ex.id}')">
+            <span class="extra-emoji">${ex.emoji}</span>
+            <div class="extra-info">
+                <span class="extra-name">${ex.name}</span>
+                <span class="extra-price">+${ex.price} د.ج</span>
+            </div>
+        </div>
+    `).join('');
+}
+
 function toggleExtra(id) {
-    const index = order.extras.indexOf(id);
+    const idx = state.currentItem.extras.indexOf(id);
     const card = document.querySelector(`.extra-card[data-id="${id}"]`);
-    
-    if (index > -1) {
-        order.extras.splice(index, 1);
-        card.classList.remove('selected');
+
+    if (idx > -1) {
+        state.currentItem.extras.splice(idx, 1);
+        if (card) card.classList.remove('selected');
     } else {
-        order.extras.push(id);
-        card.classList.add('selected');
+        state.currentItem.extras.push(id);
+        if (card) card.classList.add('selected');
     }
 }
 
 // ========================================
-// عرض الفاتورة - Show Invoice
+// إضافة إلى السلة وعرض الفاتورة
 // ========================================
 
+function addToCart() {
+    calculatePrice();
+    state.cart.push({ ...state.currentItem });
+    showScreen('cart-screen');
+    renderCart();
+}
+
+function addAnotherDrink() {
+    resetCurrentItem();
+    showScreen('type-screen');
+}
+
+function renderCart() {
+    const list = document.getElementById('cart-list');
+    const totalEl = document.getElementById('cart-total');
+    if (!list || !totalEl) return;
+
+    let total = 0;
+    list.innerHTML = state.cart.map((item, i) => {
+        total += item.price;
+        const sizeLabel = item.size || '';
+        const typeIcon = item.type === 'juice' ? '🍹' : '🥤';
+        return `
+            <div class="cart-item">
+                <div class="cart-item-header">
+                    <span class="cart-item-icon">${typeIcon}</span>
+                    <span class="cart-item-name">${item.name || 'مشروب'}</span>
+                    <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
+                </div>
+                <div class="cart-item-details">
+                    <span class="cart-item-size">${sizeLabel}</span>
+                    ${item.extras.length > 0 ? `<span class="cart-item-extras">+ ${item.extras.length} إضافات</span>` : ''}
+                    <span class="cart-item-price">${item.price} د.ج</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    totalEl.textContent = `${total} د.ج`;
+}
+
+function removeFromCart(index) {
+    state.cart.splice(index, 1);
+    if (state.cart.length === 0) {
+        newOrder();
+    } else {
+        renderCart();
+    }
+}
+
 function showInvoice() {
+    if (state.cart.length === 0) return;
+
     const details = document.getElementById('invoice-details');
     const totalEl = document.getElementById('invoice-total-price');
     const dateEl = document.getElementById('invoice-date');
     const numberEl = document.getElementById('invoice-number');
-    
+
     // التاريخ ورقم الطلب
     const now = new Date();
-    dateEl.textContent = now.toLocaleDateString('ar-DZ', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('ar-DZ', {
+        year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
     });
-    numberEl.textContent = `طلب #${Math.floor(Math.random() * 9000) + 1000}`;
-    
-    // حساب التفاصيل
+    if (numberEl) numberEl.textContent = `#${Math.floor(Math.random() * 9000) + 1000}`;
+
     let html = '';
-    let total = 0;
-    
-    // نوع المشروب
-    const typeName = order.type === 'fruity' ? 'كأس فروي 🍹' : 'ميلك شيك 🥤';
-    html += `<div class="invoice-row"><span class="invoice-row-label">النوع</span><span class="invoice-row-value">${typeName}</span></div>`;
-    
-    // الحجم
-    const sizeNames = { 'M': 'وسط (M)', 'L': 'كبير (L)', '1L': 'لتر (1L)' };
-    html += `<div class="invoice-row"><span class="invoice-row-label">الحجم</span><span class="invoice-row-value">${sizeNames[order.size]}</span></div>`;
-    
-    // القاعدة (فروي فقط)
-    if (order.type === 'fruity' && order.base) {
-        const baseNames = { water: 'ماء 💧', milk: 'حليب 🥛', orange: 'عصير برتقال 🍊' };
-        html += `<div class="invoice-row"><span class="invoice-row-label">القاعدة</span><span class="invoice-row-value">${baseNames[order.base]}</span></div>`;
-    }
-    
-    // الفئة (ميلك شيك)
-    if (order.type === 'milkshake') {
-        const catName = order.milkshakeCategory === 'choco' ? 'شوكولاتة 🍫' : 'فواكه 🍓';
-        html += `<div class="invoice-row"><span class="invoice-row-label">الفئة</span><span class="invoice-row-value">${catName}</span></div>`;
-    }
-    
-    html += `<div class="invoice-divider"><span></span></div>`;
-    html += `<div class="invoice-section-title">المكونات</div>`;
-    
-    // المكونات
-    let items;
-    if (order.type === 'fruity') {
-        items = PRODUCTS.fruits;
-    } else if (order.milkshakeCategory === 'choco') {
-        items = PRODUCTS.milkshake_choco;
-    } else {
-        items = PRODUCTS.milkshake_fruits;
-    }
-    
-    const selectedItems = order.ingredients.map(id => items.find(i => i.id === id)).filter(Boolean);
-    
-    if (selectedItems.length === 1) {
-        // فاكهة واحدة = سعرها مباشرة
-        const item = selectedItems[0];
-        const price = item.prices[order.size];
-        html += `<div class="invoice-row highlight">
-            <span class="invoice-row-label">${item.emoji} ${item.name}</span>
-            <span class="invoice-row-value">${price} د.ج</span>
-        </div>`;
-        total += price;
-    } else {
-        // كوكتيل متعدد
-        selectedItems.forEach(item => {
-            html += `<div class="invoice-row">
-                <span class="invoice-row-label">${item.emoji} ${item.name}</span>
-                <span class="invoice-row-value" style="color: var(--text-muted); font-size: 0.8rem">${item.prices[order.size]} د.ج</span>
-            </div>`;
-        });
-        
-        const cocktailPrice = calculateCocktailPrice();
-        html += `<div class="invoice-row highlight">
-            <span class="invoice-row-label">🍹 سعر الكوكتيل (${selectedItems.length} فواكه)</span>
-            <span class="invoice-row-value">${cocktailPrice} د.ج</span>
-        </div>`;
-        total += cocktailPrice;
-    }
-    
-    // الإضافات
-    if (order.extras.length > 0) {
-        html += `<div class="invoice-divider"><span></span></div>`;
-        html += `<div class="invoice-section-title">الإضافات</div>`;
-        
-        const extras = order.type === 'fruity' ? PRODUCTS.extras_fruity : PRODUCTS.extras_milkshake;
-        
-        order.extras.forEach(extraId => {
-            const extra = extras.find(e => e.id === extraId);
-            if (extra) {
-                html += `<div class="invoice-row">
-                    <span class="invoice-row-label">${extra.emoji} ${extra.name}</span>
-                    <span class="invoice-row-value">+${extra.price} د.ج</span>
-                </div>`;
-                total += extra.price;
+    let grandTotal = 0;
+
+    state.cart.forEach((item, idx) => {
+        const typeIcon = item.type === 'juice' ? '🍹' : '🥤';
+        const typeName = item.type === 'juice' ? 'عصير' : 'ميلك شيك';
+        html += `<div class="invoice-item">`;
+        html += `<div class="invoice-item-header">${typeIcon} ${item.name} <small>(${item.size})</small></div>`;
+
+        // الإضافات
+        if (item.extras.length > 0) {
+            const extrasList = item.type === 'juice' ? DATA.extras_juice : DATA.extras_milkshake;
+            const extraNames = item.extras.map(exId => {
+                const ex = extrasList.find(e => e.id === exId);
+                return ex ? ex.name : '';
+            }).filter(Boolean);
+            if (extraNames.length > 0) {
+                html += `<div class="invoice-item-extras">إضافات: ${extraNames.join('، ')}</div>`;
             }
-        });
-    }
-    
-    details.innerHTML = html;
-    totalEl.textContent = `${total} د.ج`;
-    order.price = total;
-    
+        }
+
+        html += `<div class="invoice-item-price">${item.price} د.ج</div>`;
+        html += `</div>`;
+        grandTotal += item.price;
+    });
+
+    if (details) details.innerHTML = html;
+    if (totalEl) totalEl.textContent = `${grandTotal} د.ج`;
+
     showScreen('invoice-screen');
 }
 
+
 // ========================================
-// تأثير الاهتزاز - Shake Effect
+// مساعدات
 // ========================================
 
-function shakeElement(el) {
-    el.style.animation = 'none';
-    el.offsetHeight; // force reflow
-    el.style.animation = 'shake 0.5s ease';
-    setTimeout(() => { el.style.animation = ''; }, 500);
+function animateSelection(allSelector, targetSelector) {
+    document.querySelectorAll(allSelector).forEach(el => el.classList.remove('selected'));
+    const target = document.querySelector(targetSelector);
+    if (target) target.classList.add('selected');
 }
 
-// إضافة CSS للاهتزاز
-const shakeStyle = document.createElement('style');
-shakeStyle.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20% { transform: translateX(-5px); }
-        40% { transform: translateX(5px); }
-        60% { transform: translateX(-3px); }
-        80% { transform: translateX(3px); }
-    }
-`;
-document.head.appendChild(shakeStyle);
+function shakeElement(el) {
+    if (!el) return;
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 600);
+}
 
 // ========================================
-// تهيئة التطبيق - Init
+// تهيئة
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🍹 ذوق فروتس - جاهز!');
+    resetCurrentItem();
+    // تهيئة شاشة الخلطات الجاهزة
+    const mixGrid = document.getElementById('mixes-grid');
+    if (mixGrid) renderReadyMixes();
+    console.log('🍹 ذوق فروتس v2.0 - جاهز!');
 });
