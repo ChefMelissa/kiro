@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ذوق فروتس | Dhawq Fruits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- شاشة الترحيب -->
+        <section id="welcome-screen" class="screen active">
+            <div class="welcome-container">
+                <div class="welcome-bg-shapes">
+                    <div class="shape shape-1"></div>
+                    <div class="shape shape-2"></div>
+                    <div class="shape shape-3"></div>
+                </div>
+                <div class="logo-area">
+                    <div class="logo-circle pulse">
+                        <span class="logo-icon">🍹</span>
+                    </div>
+                    <h1 class="brand-name">ذوق فروتس</h1>
+                    <p class="brand-tagline">صحتك هي استثمارك الأول</p>
+                </div>
+                <div class="welcome-fruits">
+                    <span class="float-fruit" style="--delay: 0s; --x: 10%; --y: 20%">🍓</span>
+                    <span class="float-fruit" style="--delay: 0.5s; --x: 85%; --y: 15%">🥭</span>
+                    <span class="float-fruit" style="--delay: 1s; --x: 15%; --y: 70%">🍌</span>
+                    <span class="float-fruit" style="--delay: 1.5s; --x: 80%; --y: 65%">🍊</span>
+                    <span class="float-fruit" style="--delay: 2s; --x: 50%; --y: 35%">🫐</span>
+                    <span class="float-fruit" style="--delay: 2.5s; --x: 30%; --y: 85%">🍑</span>
+                    <span class="float-fruit" style="--delay: 3s; --x: 65%; --y: 80%">🥝</span>
+                </div>
+                <button class="btn-start" onclick="startOrder()">
+                    <span>ابدأ طلبك</span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="social-link">
+                    <span>@dhawq.fruits</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة اختيار نوع المشروب -->
+        <section id="type-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBack('welcome-screen')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step active">1</span>
+                    <span class="step-line"></span>
+                    <span class="step">2</span>
+                    <span class="step-line"></span>
+                    <span class="step">3</span>
+                    <span class="step-line"></span>
+                    <span class="step">4</span>
+                    <span class="step-line"></span>
+                    <span class="step">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title">اختر نوع مشروبك</h2>
+                <p class="screen-subtitle">ما الذي تشتهيه اليوم؟</p>
+                <div class="type-cards">
+                    <div class="type-card fruity-card" onclick="selectType('fruity')" data-type="fruity">
+                        <div class="type-card-icon">🍹</div>
+                        <div class="type-card-content">
+                            <h3>كأس فروي</h3>
+                            <p>عصير فواكه طازج 100%</p>
+                            <div class="type-card-features">
+                                <span>🍎 1-5 فواكه</span>
+                                <span>💧 قاعدة متنوعة</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="type-card milkshake-card" onclick="selectType('milkshake')" data-type="milkshake">
+                        <div class="type-card-icon">🥤</div>
+                        <div class="type-card-content">
+                            <h3>ميلك شيك</h3>
+                            <p>حليب كريمي مع نكهات لذيذة</p>
+                            <div class="type-card-features">
+                                <span>🥛 حليب طازج</span>
+                                <span>🍫 شوكو & فواكه</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة اختيار الحجم -->
+        <section id="size-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBack('type-screen')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step active">2</span>
+                    <span class="step-line"></span>
+                    <span class="step">3</span>
+                    <span class="step-line"></span>
+                    <span class="step">4</span>
+                    <span class="step-line"></span>
+                    <span class="step">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title">اختر حجم الكأس</h2>
+                <p class="screen-subtitle">كم تريد أن تشرب؟</p>
+                <div class="size-options">
+                    <div class="size-card" onclick="selectSize('M')" data-size="M">
+                        <div class="cup-visual cup-m">
+                            <div class="cup-fill"></div>
+                        </div>
+                        <h3>M</h3>
+                        <p>وسط</p>
+                        <span class="size-hint">~350ml</span>
+                    </div>
+                    <div class="size-card recommended" onclick="selectSize('L')" data-size="L">
+                        <div class="recommended-badge">الأكثر طلباً</div>
+                        <div class="cup-visual cup-l">
+                            <div class="cup-fill"></div>
+                        </div>
+                        <h3>L</h3>
+                        <p>كبير</p>
+                        <span class="size-hint">~500ml</span>
+                    </div>
+                    <div class="size-card" onclick="selectSize('1L')" data-size="1L">
+                        <div class="cup-visual cup-xl">
+                            <div class="cup-fill"></div>
+                        </div>
+                        <h3>1L</h3>
+                        <p>لتر كامل</p>
+                        <span class="size-hint">1000ml</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة اختيار القاعدة (فروي فقط) -->
+        <section id="base-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBack('size-screen')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step active">3</span>
+                    <span class="step-line"></span>
+                    <span class="step">4</span>
+                    <span class="step-line"></span>
+                    <span class="step">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title">اختر قاعدة المشروب</h2>
+                <p class="screen-subtitle">ما هو أساس عصيرك؟</p>
+                <div class="base-options">
+                    <div class="base-card" onclick="selectBase('water')" data-base="water">
+                        <div class="base-icon">💧</div>
+                        <h3>ماء</h3>
+                        <p>خفيف ومنعش</p>
+                    </div>
+                    <div class="base-card" onclick="selectBase('milk')" data-base="milk">
+                        <div class="base-icon">🥛</div>
+                        <h3>حليب</h3>
+                        <p>كريمي وغني</p>
+                    </div>
+                    <div class="base-card" onclick="selectBase('orange')" data-base="orange">
+                        <div class="base-icon">🍊</div>
+                        <h3>عصير برتقال</h3>
+                        <p>حامض ومنعش</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة اختيار الفئة (ميلك شيك) -->
+        <section id="milkshake-category-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBack('size-screen')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step active">3</span>
+                    <span class="step-line"></span>
+                    <span class="step">4</span>
+                    <span class="step-line"></span>
+                    <span class="step">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title">اختر فئة الميلك شيك</h2>
+                <p class="screen-subtitle">شوكولاتة أم فواكه؟</p>
+                <div class="type-cards">
+                    <div class="type-card choco-card" onclick="selectMilkshakeCategory('choco')">
+                        <div class="type-card-icon">🍫</div>
+                        <div class="type-card-content">
+                            <h3>شوكولاتة</h3>
+                            <p>نوتيلا، سنيكرز، كوكيز والمزيد</p>
+                        </div>
+                    </div>
+                    <div class="type-card fruit-milk-card" onclick="selectMilkshakeCategory('fruits')">
+                        <div class="type-card-icon">🍓</div>
+                        <div class="type-card-content">
+                            <h3>فواكه</h3>
+                            <p>فراولة، موز، كيوي والمزيد</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة اختيار المكونات -->
+        <section id="ingredients-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBackFromIngredients()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step active">4</span>
+                    <span class="step-line"></span>
+                    <span class="step">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title" id="ingredients-title">اختر الفواكه</h2>
+                <p class="screen-subtitle" id="ingredients-subtitle">يمكنك اختيار من 1 إلى 5 فواكه</p>
+                <div class="selected-counter" id="selected-counter">
+                    <div class="counter-bar">
+                        <div class="counter-fill" id="counter-fill"></div>
+                    </div>
+                    <span class="counter-text"><span id="count-number">0</span> / <span id="count-max">5</span></span>
+                </div>
+                <div class="live-price" id="live-price">
+                    <span class="live-price-label">السعر التقديري:</span>
+                    <span class="live-price-value" id="live-price-value">0 د.ج</span>
+                </div>
+                <div class="ingredients-grid" id="ingredients-grid">
+                    <!-- يتم ملؤها بالجافاسكريبت -->
+                </div>
+                <div class="bottom-action">
+                    <button class="btn-next" id="btn-next-ingredients" onclick="goToExtras()" disabled>
+                        <span>التالي - الإضافات</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة الإضافات -->
+        <section id="extras-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn-back" onclick="goBack('ingredients-screen')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="step-indicator">
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step done">✓</span>
+                    <span class="step-line done"></span>
+                    <span class="step active">5</span>
+                </div>
+            </div>
+            <div class="screen-content">
+                <h2 class="screen-title">إضافات اختيارية</h2>
+                <p class="screen-subtitle">أضف لمسة مميزة لمشروبك ✨</p>
+                <div class="extras-grid" id="extras-grid">
+                    <!-- يتم ملؤها بالجافاسكريبت -->
+                </div>
+                <div class="bottom-action">
+                    <button class="btn-next btn-invoice" onclick="showInvoice()">
+                        <span>عرض الفاتورة</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- شاشة الفاتورة -->
+        <section id="invoice-screen" class="screen">
+            <div class="screen-content invoice-content">
+                <div class="invoice-card">
+                    <div class="invoice-header">
+                        <div class="invoice-logo">🍹</div>
+                        <h2>ذوق فروتس</h2>
+                        <p class="invoice-tagline">صحتك هي استثمارك الأول</p>
+                        <p class="invoice-date" id="invoice-date"></p>
+                        <p class="invoice-number" id="invoice-number"></p>
+                    </div>
+                    <div class="invoice-divider">
+                        <span></span>
+                    </div>
+                    <div class="invoice-details" id="invoice-details">
+                        <!-- يتم ملؤها بالجافاسكريبت -->
+                    </div>
+                    <div class="invoice-divider">
+                        <span></span>
+                    </div>
+                    <div class="invoice-total">
+                        <div class="invoice-total-row">
+                            <span>الإجمالي</span>
+                            <span id="invoice-total-price" class="total-price">0 د.ج</span>
+                        </div>
+                    </div>
+                    <div class="invoice-footer">
+                        <p>شكراً لزيارتكم! 💚</p>
+                        <p class="invoice-social">📷 @dhawq.fruits</p>
+                    </div>
+                </div>
+                <div class="invoice-actions">
+                    <button class="btn-new-order" onclick="newOrder()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>طلب جديد</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
