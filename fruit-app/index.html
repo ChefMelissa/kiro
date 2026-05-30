@@ -1,391 +1,254 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ذوق فروتس | Dhawq Fruits</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>ذوق فروتس | Dhawq Fruits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="app">
 
-
-<!-- ===== شاشة الترحيب ===== -->
-<section id="welcome-screen" class="screen active">
-    <div class="welcome-container">
-        <div class="welcome-bg">
-            <div class="blob blob-1"></div>
-            <div class="blob blob-2"></div>
-        </div>
-        <div class="logo-area">
-            <div class="logo-circle"><span>🍹</span></div>
-            <h1 class="brand-name">ذوق فروتس</h1>
-            <p class="brand-tagline">صحتك هي استثمارك الأول</p>
-        </div>
-        <div class="floating-fruits">
-            <span style="--d:0s;--x:8%;--y:18%">🍓</span>
-            <span style="--d:.7s;--x:85%;--y:12%">🥭</span>
-            <span style="--d:1.4s;--x:12%;--y:72%">🍌</span>
-            <span style="--d:2.1s;--x:78%;--y:68%">🍊</span>
-            <span style="--d:2.8s;--x:45%;--y:30%">🥝</span>
-            <span style="--d:3.5s;--x:65%;--y:82%">🍑</span>
-        </div>
-        <button class="btn-start" onclick="startOrder()">
-            ابدأ طلبك
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <p class="social-tag">📷 @dhawq.fruits</p>
+<!-- ============ WELCOME ============ -->
+<section id="welcome" class="screen active">
+  <div class="welcome-orbs"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
+  <div class="welcome-inner">
+    <div class="logo-badge">🍹</div>
+    <h1 class="brand">ذوق فروتس</h1>
+    <p class="brand-sub">صحتك هي استثمارك الأول</p>
+    <div class="brand-line"></div>
+    <div class="ring-fruits">
+      <img src="images/strawberry.jpg" alt="">
+      <img src="images/mango.jpg" alt="">
+      <img src="images/kiwi.jpg" alt="">
+      <img src="images/orange.jpg" alt="">
+      <img src="images/avocado.jpg" alt="">
     </div>
+    <button class="btn btn-cta btn-lg welcome-cta" onclick="beginOrder()">
+      اطلب الآن
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="ig-tag">📷 @dhawq.fruits</p>
+  </div>
 </section>
 
-
-<!-- ===== شاشة اختيار النوع ===== -->
-<section id="type-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('welcome-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">الخطوة 1</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">ماذا تريد أن تشرب؟</h2>
-        <div class="type-cards">
-            <div class="type-card" data-type="juice" onclick="selectType('juice')">
-                <div class="type-icon">🍹</div>
-                <h3>عصير فواكه</h3>
-                <p>طازج 100% - فاكهة واحدة أو كوكتيل</p>
-                <div class="type-tags"><span>فاكهة مفردة</span><span>خلطة مخصصة</span><span>خلطات جاهزة</span></div>
-            </div>
-            <div class="type-card" data-type="milkshake" onclick="selectType('milkshake')">
-                <div class="type-icon">🥤</div>
-                <h3>ميلك شيك</h3>
-                <p>حليب كريمي مع نكهات لا تُقاوم</p>
-                <div class="type-tags"><span>شوكولاتة</span><span>فواكه</span><span>خلطات مميزة</span></div>
-            </div>
-        </div>
-    </div>
+<!-- ============ TYPE ============ -->
+<section id="type" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="back()">→</button>
+    <span class="topbar-title">نوع المشروب</span>
+    <span class="topbar-spacer"></span>
+    <button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button>
+  </div>
+  <span class="step-pill">الخطوة 1 من 4</span>
+  <h2 class="h-title">ماذا تشتهي اليوم؟</h2>
+  <p class="h-sub">اختر نوع مشروبك المفضّل</p>
+  <div class="choice-stack">
+    <button class="choice" onclick="chooseType('juice')">
+      <span class="choice-emoji">🍹</span>
+      <span class="choice-body">
+        <h3>عصير فواكه</h3>
+        <p>طبيعي 100% — طازج يومياً</p>
+        <span class="choice-tags"><span>فاكهة مفردة</span><span>خلطة مخصّصة</span><span>خلطات جاهزة</span></span>
+      </span>
+      <span class="choice-arrow">‹</span>
+    </button>
+    <button class="choice gold" onclick="chooseType('milkshake')">
+      <span class="choice-emoji">🥤</span>
+      <span class="choice-body">
+        <h3>ميلك شيك</h3>
+        <p>حليب كريمي ونكهات غنية</p>
+        <span class="choice-tags"><span>شوكولاتة</span><span>فواكه</span><span>خلطات مميزة</span></span>
+      </span>
+      <span class="choice-arrow">‹</span>
+    </button>
+  </div>
 </section>
 
-<!-- ===== شاشة وضع العصير ===== -->
-<section id="juice-mode-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('type-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">الخطوة 2</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">كيف تريد عصيرك؟</h2>
-        <div class="mode-cards">
-            <div class="mode-card" onclick="selectJuiceMode('single')">
-                <span class="mode-emoji">🍊</span>
-                <div>
-                    <h4>فاكهة واحدة</h4>
-                    <p>عصير نقي من نوع واحد</p>
-                </div>
-            </div>
-            <div class="mode-card" onclick="selectJuiceMode('mix_custom')">
-                <span class="mode-emoji">🍹</span>
-                <div>
-                    <h4>خلطة مخصصة</h4>
-                    <p>اختر 2 إلى 5 فواكه بنفسك</p>
-                </div>
-            </div>
-            <div class="mode-card popular" onclick="selectJuiceMode('mix_ready')">
-                <span class="popular-badge">⭐ الأكثر طلباً</span>
-                <span class="mode-emoji">📋</span>
-                <div>
-                    <h4>خلطات جاهزة</h4>
-                    <p>خلطاتنا المميزة بأسعار ثابتة</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- ============ JUICE MODE ============ -->
+<section id="juiceMode" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">عصير فواكه</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 2 من 4</span>
+  <h2 class="h-title">كيف تريد عصيرك؟</h2>
+  <p class="h-sub">اختر طريقة التحضير</p>
+  <div class="choice-stack">
+    <button class="choice" onclick="chooseJuiceMode('single')">
+      <span class="choice-emoji">🍊</span>
+      <span class="choice-body"><h3>فاكهة واحدة</h3><p>عصير نقي من فاكهة واحدة</p></span>
+      <span class="choice-arrow">‹</span>
+    </button>
+    <button class="choice" onclick="chooseJuiceMode('custom')">
+      <span class="choice-emoji">🥝</span>
+      <span class="choice-body"><h3>خلطة مخصّصة</h3><p>اخلط من 2 إلى 5 فواكه بذوقك</p></span>
+      <span class="choice-arrow">‹</span>
+    </button>
+    <button class="choice gold" onclick="chooseJuiceMode('preset')">
+      <span class="ribbon">الأشهر</span>
+      <span class="choice-emoji">⭐</span>
+      <span class="choice-body"><h3>خلطات جاهزة</h3><p>خلطاتنا المميّزة بأسعار ثابتة</p></span>
+      <span class="choice-arrow">‹</span>
+    </button>
+  </div>
 </section>
 
-
-<!-- ===== شاشة الخلطات الجاهزة ===== -->
-<section id="mix-ready-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('juice-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">اختر خلطتك</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">خلطات جاهزة 🌟</h2>
-        <p class="screen-sub">أسعار ثابتة - اختر خلطتك المفضلة</p>
-        <div class="mixes-grid" id="mixes-grid"></div>
-    </div>
+<!-- ============ JUICE SIZE ============ -->
+<section id="juiceSize" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">الحجم</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 3 من 4</span>
+  <h2 class="h-title">اختر الحجم</h2>
+  <p class="h-sub">كم تريد أن تشرب؟</p>
+  <div class="size-grid"></div>
 </section>
 
-<!-- ===== شاشة حجم الخلطة الجاهزة ===== -->
-<section id="mix-size-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('mix-ready-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">اختر الحجم</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر الحجم</h2>
-        <div class="size-options">
-            <div class="size-card" data-size="0.5L" onclick="selectMixSize('0.5L')">
-                <div class="cup cup-m"></div>
-                <h3>0.5L</h3>
-                <p>نصف لتر</p>
-            </div>
-            <div class="size-card" data-size="1L" onclick="selectMixSize('1L')">
-                <div class="cup cup-xl"></div>
-                <h3>1L</h3>
-                <p>لتر كامل</p>
-            </div>
-        </div>
-    </div>
+<!-- ============ JUICE BASE ============ -->
+<section id="juiceBase" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">القاعدة</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 3 من 4</span>
+  <h2 class="h-title">اختر القاعدة</h2>
+  <p class="h-sub">ما أساس مشروبك؟</p>
+  <div class="base-stack">
+    <button class="base-opt" onclick="chooseBase('water')"><span class="base-ic">💧</span><span><h4>ماء</h4><p>خفيف ومنعش</p></span></button>
+    <button class="base-opt" onclick="chooseBase('milk')"><span class="base-ic">🥛</span><span><h4>حليب</h4><p>كريمي وغني</p></span></button>
+    <button class="base-opt" onclick="chooseBase('orange')"><span class="base-ic">🍊</span><span><h4>عصير برتقال</h4><p>حمضي منعش</p></span></button>
+  </div>
 </section>
 
-<!-- ===== شاشة حجم العصير ===== -->
-<section id="juice-size-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('juice-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">اختر الحجم</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر حجم الكأس</h2>
-        <div class="size-options">
-            <div class="size-card" data-size="M" onclick="selectJuiceSize('M')">
-                <div class="cup cup-m"></div>
-                <h3>M</h3>
-                <p>وسط</p>
-            </div>
-            <div class="size-card recommended" data-size="L" onclick="selectJuiceSize('L')">
-                <span class="rec-badge">الأكثر طلباً</span>
-                <div class="cup cup-l"></div>
-                <h3>L</h3>
-                <p>كبير</p>
-            </div>
-            <div class="size-card" data-size="1L" onclick="selectJuiceSize('1L')">
-                <div class="cup cup-xl"></div>
-                <h3>1L</h3>
-                <p>لتر</p>
-            </div>
-        </div>
-    </div>
+<!-- ============ FRUITS ============ -->
+<section id="fruits" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title" id="fruitsTitle">اصنع خلطتك</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 4 من 4</span>
+  <h2 class="h-title" id="fruitsTitle2" style="display:none"></h2>
+  <p class="h-sub" id="fruitsHint">اختر من 2 إلى 5 فواكه</p>
+  <div class="flavor-row" id="flavorRow"></div>
+  <div id="fruitGrid"></div>
+  <div class="actionbar" id="fruitBar">
+    <div class="price-pod"><span class="tag" id="fruitPriceTag"></span><span class="amount" id="fruitPrice">—</span></div>
+    <span class="counter-pill" id="fruitCount">0/5</span>
+    <button class="btn btn-cta" id="fruitsNext" onclick="confirmFruits()" disabled>التالي</button>
+  </div>
 </section>
 
-
-<!-- ===== شاشة القاعدة ===== -->
-<section id="juice-base-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('juice-size-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">القاعدة</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر قاعدة العصير</h2>
-        <div class="base-options">
-            <div class="base-card" data-base="water" onclick="selectBase('water')">
-                <span class="base-icon">💧</span>
-                <div><h4>ماء</h4><p>خفيف ومنعش</p></div>
-            </div>
-            <div class="base-card" data-base="milk" onclick="selectBase('milk')">
-                <span class="base-icon">🥛</span>
-                <div><h4>حليب</h4><p>كريمي وغني</p></div>
-            </div>
-            <div class="base-card" data-base="orange" onclick="selectBase('orange')">
-                <span class="base-icon">🍊</span>
-                <div><h4>عصير برتقال</h4><p>منعش وحامض</p></div>
-            </div>
-        </div>
-    </div>
+<!-- ============ PRESET LIST ============ -->
+<section id="presetList" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">خلطات جاهزة</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">خلطاتنا المميّزة</span>
+  <h2 class="h-title">اختر خلطتك 🌟</h2>
+  <p class="h-sub">أسعار ثابتة من المينيو</p>
+  <div class="preset-grid" id="presetGrid"></div>
 </section>
 
-<!-- ===== شاشة اختيار الفواكه ===== -->
-<section id="fruits-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('juice-base-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">اختر الفواكه</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر فواكهك 🍓</h2>
-        <p class="screen-sub" id="fruits-subtitle">اختر من 1 إلى 5 فواكه</p>
-        <div class="counter-bar-wrap">
-            <div class="counter-bar"><div class="counter-fill" id="counter-fill"></div></div>
-            <span class="counter-text" id="fruit-counter">0 / 5</span>
-        </div>
-        <div class="live-price-bar">
-            <span>السعر:</span>
-            <span class="live-price-val" id="live-price-value">---</span>
-        </div>
-        <div id="fruits-grid" class="fruits-grid"></div>
-        <div class="bottom-bar">
-            <button class="btn-primary" id="btn-fruits-next" onclick="confirmFruits()" disabled>التالي ←</button>
-        </div>
-    </div>
+<!-- ============ PRESET SIZE ============ -->
+<section id="presetSize" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">الحجم</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <h2 class="h-title">اختر الحجم</h2>
+  <p class="h-sub">للخلطات الجاهزة</p>
+  <div class="size-grid"></div>
 </section>
 
-
-<!-- ===== شاشة وضع الميلك شيك ===== -->
-<section id="milkshake-mode-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('type-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">الخطوة 2</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر نوع الميلك شيك</h2>
-        <div class="mode-cards">
-            <div class="mode-card" onclick="selectMilkshakeMode('ms_choco')">
-                <span class="mode-emoji">🍫</span>
-                <div>
-                    <h4>شوكولاتة</h4>
-                    <p>نوتيلا، سنيكرز، كوكيز، فيريرو...</p>
-                </div>
-            </div>
-            <div class="mode-card" onclick="selectMilkshakeMode('ms_fruit')">
-                <span class="mode-emoji">🍓</span>
-                <div>
-                    <h4>فواكه</h4>
-                    <p>فراولة، موز، كيوي، توت...</p>
-                </div>
-            </div>
-            <div class="mode-card popular" onclick="selectMilkshakeMode('ms_mix_ready')">
-                <span class="popular-badge">⭐ خلطات مميزة</span>
-                <span class="mode-emoji">✨</span>
-                <div>
-                    <h4>خلطات جاهزة</h4>
-                    <p>Lotus + كراميل، Oreo + Nutella...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- ============ MS MODE ============ -->
+<section id="msMode" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">ميلك شيك</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 2 من 4</span>
+  <h2 class="h-title">اختر نوع الميلك شيك</h2>
+  <p class="h-sub">شوكولاتة، فواكه، أو خلطة مميّزة</p>
+  <div class="choice-stack">
+    <button class="choice gold" onclick="chooseMsMode('ms_choco')"><span class="choice-emoji">🍫</span><span class="choice-body"><h3>شوكولاتة</h3><p>نوتيلا، سنيكرز، كوكيز، فيريرو…</p></span><span class="choice-arrow">‹</span></button>
+    <button class="choice" onclick="chooseMsMode('ms_fruit')"><span class="choice-emoji">🍓</span><span class="choice-body"><h3>فواكه</h3><p>فراولة، موز، كيوي، توت…</p></span><span class="choice-arrow">‹</span></button>
+    <button class="choice gold" onclick="chooseMsMode('ms_mix')"><span class="ribbon">مميّز</span><span class="choice-emoji">✨</span><span class="choice-body"><h3>خلطات مميّزة</h3><p>لوتس+كراميل، أوريو+نوتيلا…</p></span><span class="choice-arrow">‹</span></button>
+  </div>
 </section>
 
-<!-- ===== شاشة ميلك شيك شوكولاتة ===== -->
-<section id="ms-choco-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('milkshake-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">شوكولاتة</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر نوع الشوكولاتة 🍫</h2>
-        <div id="ms-choco-grid" class="ms-grid"></div>
-    </div>
+<!-- ============ MS LIST ============ -->
+<section id="msList" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title" id="msListTitle">اختر</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <span class="step-pill">الخطوة 3 من 4</span>
+  <div class="ms-list" id="msListGrid"></div>
 </section>
 
-<!-- ===== شاشة ميلك شيك فواكه ===== -->
-<section id="ms-fruit-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('milkshake-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">فواكه</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر الفاكهة 🍓</h2>
-        <div id="ms-fruit-grid" class="ms-grid"></div>
-    </div>
+<!-- ============ MS SIZE ============ -->
+<section id="msSize" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">الحجم</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <h2 class="h-title">اختر الحجم</h2>
+  <p class="h-sub">حجم الميلك شيك</p>
+  <div class="size-grid"></div>
 </section>
 
-<!-- ===== شاشة خلطات ميلك شيك جاهزة ===== -->
-<section id="ms-mix-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('milkshake-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">خلطات مميزة</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">خلطات ميلك شيك ✨</h2>
-        <div id="ms-mix-grid" class="ms-grid"></div>
-    </div>
+<!-- ============ EXTRAS ============ -->
+<section id="extras" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">الإضافات</span><span class="topbar-spacer"></span><button class="icon-btn cart-fab" onclick="renderCart();go('cart')">🛒<span class="cart-badge"></span></button></div>
+  <h2 class="h-title">إضافات اختيارية ✨</h2>
+  <p class="h-sub">لمسة أخيرة لمشروبك</p>
+  <div class="extras-grid" id="extrasGrid"></div>
+  <div class="actionbar">
+    <div class="price-pod"><span class="tag">الإجمالي</span><span class="amount" id="extrasTotal">0</span></div>
+    <button class="btn btn-gold" id="addCartBtn" onclick="addToCart()">أضِف للطلب 🛒</button>
+  </div>
 </section>
 
-<!-- ===== شاشة حجم ميلك شيك ===== -->
-<section id="ms-size-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('milkshake-mode-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">الحجم</h3>
-    </div>
-    <div class="screen-body">
-        <h2 class="screen-title">اختر الحجم</h2>
-        <div class="size-options">
-            <div class="size-card" data-size="M" onclick="selectMsSize('M')">
-                <div class="cup cup-m"></div>
-                <h3>M</h3>
-                <p>وسط</p>
-            </div>
-            <div class="size-card recommended" data-size="L" onclick="selectMsSize('L')">
-                <span class="rec-badge">الأكثر طلباً</span>
-                <div class="cup cup-l"></div>
-                <h3>L</h3>
-                <p>كبير</p>
-            </div>
-            <div class="size-card" data-size="1L" onclick="selectMsSize('1L')">
-                <div class="cup cup-xl"></div>
-                <h3>1L</h3>
-                <p>لتر</p>
-            </div>
-        </div>
-    </div>
+<!-- ============ CART ============ -->
+<section id="cart" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">طلبك</span><span class="topbar-spacer"></span></div>
+  <div class="cart-count-lead">🛍️ <span id="cartCountLabel">0</span> مشروب في طلبك</div>
+  <div class="cart-list" id="cartList"></div>
+  <div class="cart-total-card"><span class="lbl">الإجمالي</span><span class="val" id="cartTotal">0</span></div>
+  <div class="actionbar" style="gap:10px">
+    <button class="btn btn-ghost" style="flex:.8" onclick="addAnother()">+ مشروب</button>
+    <button class="btn btn-cta" onclick="goToCheckout()">إتمام الطلب</button>
+  </div>
 </section>
 
-
-<!-- ===== شاشة الإضافات ===== -->
-<section id="extras-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('fruits-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">إضافات</h3>
+<!-- ============ CHECKOUT ============ -->
+<section id="checkout" class="screen">
+  <div class="topbar"><button class="icon-btn" onclick="back()">→</button><span class="topbar-title">إتمام الطلب</span><span class="topbar-spacer"></span></div>
+  <h2 class="h-title">تفاصيل الطلب</h2>
+  <p class="h-sub">معلومات بسيطة لإنهاء طلبك</p>
+  <div class="field">
+    <label>الاسم (لمناداتك عند الجاهزية)</label>
+    <input id="nameInput" type="text" placeholder="مثال: محمد" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>نوع الطلب</label>
+    <div class="seg">
+      <button class="seg-opt" data-t="dinein" onclick="pickOrderType('dinein')"><span class="em">🪑</span>تناول بالمحل</button>
+      <button class="seg-opt" data-t="takeaway" onclick="pickOrderType('takeaway')"><span class="em">🥡</span>سفري</button>
     </div>
-    <div class="screen-body">
-        <h2 class="screen-title">إضافات اختيارية ✨</h2>
-        <p class="screen-sub">أضف نكهة إضافية لمشروبك (اختياري)</p>
-        <div id="extras-grid" class="extras-grid"></div>
-        <div class="bottom-bar">
-            <button class="btn-primary btn-add-cart" onclick="addToCart()">أضف للسلة 🛒</button>
-        </div>
-    </div>
+  </div>
+  <div class="checkout-summary" id="checkoutSummary"></div>
+  <div class="actionbar">
+    <button class="btn btn-cta btn-lg" onclick="confirmOrder()">تأكيد الطلب ✓</button>
+  </div>
 </section>
 
-<!-- ===== شاشة السلة ===== -->
-<section id="cart-screen" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" onclick="goBack('extras-screen')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <h3 class="screen-step">السلة</h3>
+<!-- ============ RECEIPT ============ -->
+<section id="receipt" class="screen">
+  <div class="receipt-card">
+    <div class="rc-head">
+      <div class="rc-logo">🍹</div>
+      <div class="rc-brand">ذوق فروتس</div>
+      <div class="rc-tag">صحتك هي استثمارك الأول</div>
+      <div class="rc-success">✓ تم استلام طلبك</div>
     </div>
-    <div class="screen-body">
-        <h2 class="screen-title">سلة الطلبات 🛒</h2>
-        <div id="cart-list" class="cart-list"></div>
-        <div class="cart-total-bar">
-            <span>الإجمالي:</span>
-            <span id="cart-total" class="cart-total-price">0 د.ج</span>
-        </div>
-        <div class="cart-actions">
-            <button class="btn-secondary" onclick="addAnotherDrink()">+ أضف مشروب آخر</button>
-            <button class="btn-primary" onclick="showInvoice()">تأكيد الطلب ✓</button>
-        </div>
+    <div class="rc-info">
+      <div class="box"><div class="k">رقم الطلب</div><div class="v" id="rcNumber">#000</div></div>
+      <div class="box"><div class="k">التاريخ</div><div class="v" id="rcDate">—</div></div>
+      <div class="box"><div class="k">الاسم</div><div class="v" id="rcName">—</div></div>
+      <div class="box"><div class="k">النوع</div><div class="v" id="rcType">—</div></div>
     </div>
+    <div class="rc-dash"></div>
+    <div class="rc-lines" id="rcLines"></div>
+    <div class="rc-dash"></div>
+    <div class="rc-total"><span class="lbl">الإجمالي (<span id="rcCount">0</span> مشروب)</span><span class="val" id="rcTotal">0</span></div>
+    <div class="rc-foot"><p>شكراً لزيارتكم 💚</p><p class="ig">📷 @dhawq.fruits</p></div>
+  </div>
+  <div style="width:100%;margin-top:18px"><button class="btn btn-cta btn-lg" onclick="finishAndReset()">🔄 طلب جديد</button></div>
 </section>
 
-<!-- ===== شاشة الفاتورة ===== -->
-<section id="invoice-screen" class="screen">
-    <div class="screen-body invoice-body">
-        <div class="invoice-card">
-            <div class="invoice-head">
-                <span class="invoice-logo">🍹</span>
-                <h2>ذوق فروتس</h2>
-                <p class="invoice-tagline">صحتك هي استثمارك الأول</p>
-                <div class="invoice-meta">
-                    <span id="invoice-date"></span>
-                    <span id="invoice-number"></span>
-                </div>
-            </div>
-            <div class="invoice-divider"></div>
-            <div id="invoice-details" class="invoice-details"></div>
-            <div class="invoice-divider"></div>
-            <div class="invoice-total-row">
-                <span>الإجمالي</span>
-                <span id="invoice-total-price">0 د.ج</span>
-            </div>
-            <div class="invoice-foot">
-                <p>شكراً لزيارتكم! 💚</p>
-                <p>📷 @dhawq.fruits</p>
-            </div>
-        </div>
-        <button class="btn-primary btn-new" onclick="newOrder()">🔄 طلب جديد</button>
-    </div>
-</section>
-
-</div><!-- end #app -->
+<div id="confetti"></div>
+</div>
 <script src="app.js"></script>
 </body>
 </html>
