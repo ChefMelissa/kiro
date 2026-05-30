@@ -74,13 +74,21 @@ DB.presetMixes = [
 ];
 
 
-/* ميلك شيك — شوكولاتة (M / L / 1L) */
+/* ميلك شيك — شوكولاتة: اختيار النوع المحدّد (M / L / 1L) */
 DB.msChoco = [
-  { id:'ms_choco',   name:'شوكو',             img:'🍫', desc:'مارس، باونتي، سنيكرز، كيت كات', M:550, L:600, '1L':1100 },
-  { id:'ms_cookies', name:'كوكيز',            img:'🍪', desc:'لوتس، بيسكوف، أوريو',          M:350, L:400, '1L':700 },
-  { id:'ms_raffa',   name:'رافاييلو وفيريرو', img:'🍬', desc:'Raffaello + Ferrero',          M:600, L:650, '1L':1200 },
-  { id:'ms_caramel', name:'كراميل',           img:'🍯', desc:'كراميل كريمي',                 M:400, L:450, '1L':800 },
-  { id:'ms_nuts',    name:'مكسرات',           img:'🥜', desc:'خليط مكسرات',                  M:450, L:500, '1L':900 },
+  { id:'c_nutella',  name:'نوتيلا',        img:'🍫', desc:'Nutella',        M:550, L:600, '1L':1100 },
+  { id:'c_mars',     name:'مارس',          img:'🍫', desc:'Mars',           M:550, L:600, '1L':1100 },
+  { id:'c_snickers', name:'سنيكرز',        img:'🥜', desc:'Snickers',        M:550, L:600, '1L':1100 },
+  { id:'c_bounty',   name:'باونتي',        img:'🥥', desc:'Bounty',          M:550, L:600, '1L':1100 },
+  { id:'c_kitkat',   name:'كيت كات',       img:'🍫', desc:'KitKat',          M:550, L:600, '1L':1100 },
+  { id:'c_twix',     name:'تويكس',         img:'🍫', desc:'Twix',            M:550, L:600, '1L':1100 },
+  { id:'c_bueno',    name:'كيندر بوينو',   img:'🍫', desc:'Kinder Bueno',    M:550, L:600, '1L':1100 },
+  { id:'c_lotus',    name:'لوتس',          img:'🍪', desc:'Lotus Biscoff',   M:350, L:400, '1L':700 },
+  { id:'c_oreo',     name:'أوريو',         img:'🍪', desc:'Oreo',            M:350, L:400, '1L':700 },
+  { id:'c_raffa',    name:'رافاييلو',      img:'🤍', desc:'Raffaello',       M:600, L:650, '1L':1200 },
+  { id:'c_ferrero',  name:'فيريرو روشيه',  img:'🟤', desc:'Ferrero Rocher',  M:600, L:650, '1L':1200 },
+  { id:'c_caramel',  name:'كراميل',        img:'🍯', desc:'Caramel',         M:400, L:450, '1L':800 },
+  { id:'c_nuts',     name:'مكسرات',        img:'🥜', desc:'Mixed Nuts',      M:450, L:500, '1L':900 },
 ];
 
 /* ميلك شيك — فواكه (M / L / 1L) */
@@ -171,7 +179,16 @@ function findPreset(fruitIds, flavorIds, hasHoney) {
 
 const ADD_FACTORS = [0.30, 0.20, 0.15, 0.10]; // نسب الفواكه الإضافية المتناقصة
 
-// حساب سعر الخلطة المخصصة
+// سعر الخلطة الجاهزة لأي حجم (المينيو يعطي 0.5L و 1L؛ نشتق M و L منهما)
+// L = سعر 0.5L (نصف لتر ≈ كأس L) ، 1L = سعر اللتر ، M = أصغر بنسبة ثابتة
+function presetSizePrice(preset, size) {
+  if (size === '1L') return preset['1L'];
+  if (size === 'L' || size === '0.5L') return preset['0.5L'];
+  if (size === 'M') return Math.round(preset['0.5L'] * 0.85 / 50) * 50;
+  return preset['0.5L'];
+}
+
+// حساب سعر الخلطة المخصصة (غير موجودة في المينيو)
 function customMixPrice(fruitIds, size) {
   const key = fruitPriceKey(size);
   const prices = fruitIds
@@ -186,18 +203,24 @@ function customMixPrice(fruitIds, size) {
   return Math.round(total / 50) * 50;          // تقريب لأقرب 50
 }
 
+// السعر الموحّد لأي خلطة عصير (جاهزة أو مخصصة) لأي حجم
+function mixPriceForSize(fruitIds, flavorIds, hasHoney, size) {
+  const preset = findPreset(fruitIds, flavorIds, hasHoney);
+  if (preset) return presetSizePrice(preset, size);
+  return customMixPrice(fruitIds, size);
+}
+
 // السعر الأساسي لأي مشروب (قبل الإضافات)
 function basePrice(item) {
   switch (item.kind) {
     case 'single':
       return DB.fruits[item.fruits[0]][item.size] || 0;
     case 'preset':
-      return item.preset[item.size] || 0;
+      return presetSizePrice(item.preset, item.size);
     case 'custom': {
       const preset = findPreset(item.fruits, item.flavors, item.honey);
-      if (preset) { item.matchedPreset = preset.name; return preset[item.size] || 0; }
-      item.matchedPreset = null;
-      return customMixPrice(item.fruits, item.size);
+      item.matchedPreset = preset ? preset.name : null;
+      return mixPriceForSize(item.fruits, item.flavors, item.honey, item.size);
     }
     case 'ms_choco': return DB.msChoco.find(x => x.id === item.choice)[item.size] || 0;
     case 'ms_fruit': return DB.msFruit.find(x => x.id === item.choice)[item.size] || 0;
@@ -298,9 +321,8 @@ function chooseJuiceMode(mode) {
   setTimeout(() => {
     if (mode === 'preset') { renderPresets(); go('presetList'); }
     else {
-      // فاكهة مفردة: M/L/1L  —  خلطة مخصّصة: 0.5L/1L (مثل المينيو)
-      const sizes = mode === 'single' ? ['M', 'L', '1L'] : ['0.5L', '1L'];
-      renderSizeOptions('juiceSize', sizes, 'chooseJuiceSize');
+      // الجميع الآن M / L / 1L (توحيد الأحجام)
+      renderSizeOptions('juiceSize', ['M', 'L', '1L'], 'chooseJuiceSize');
       go('juiceSize');
     }
   }, 220);
@@ -328,7 +350,7 @@ function renderPresets() {
     <button class="preset-card reveal" style="--i:${i}" onclick="pickPreset('${m.id}')">
       <span class="preset-emoji">${presetEmoji(m)}</span>
       <span class="preset-name">${m.name}</span>
-      <span class="preset-price">${m['0.5L']} - ${m['1L']} دج</span>
+      <span class="preset-price">${presetSizePrice(m, 'M')} - ${m['1L']} دج</span>
     </button>`).join('');
 }
 function presetEmoji(m) {
@@ -342,7 +364,7 @@ function pickPreset(id) {
   App.draft.preset = m;
   App.draft.name = m.name;
   highlight('.preset-card', event.currentTarget);
-  setTimeout(() => { renderSizeOptions('presetSize', ['0.5L', '1L'], 'setPresetSize'); go('presetSize'); }, 220);
+  setTimeout(() => { renderSizeOptions('presetSize', ['M', 'L', '1L'], 'setPresetSize'); go('presetSize'); }, 220);
 }
 
 /* خيارات الحجم العامة */
@@ -443,7 +465,7 @@ function updateFruitBar() {
     if (d.kind === 'single') { preview = DB.fruits[d.fruits[0]][d.size]; }
     else if (n >= 2) {
       const preset = findPreset(d.fruits, d.flavors, d.honey);
-      preview = preset ? preset[d.size] : customMixPrice(d.fruits, d.size);
+      preview = preset ? presetSizePrice(preset, d.size) : customMixPrice(d.fruits, d.size);
       label = preset ? 'سعر المينيو' : 'خلطة مخصصة';
     }
   }
@@ -637,7 +659,59 @@ function renderReceipt() {
   document.getElementById('rcLines').innerHTML = lines;
   animateNumber(document.getElementById('rcTotal'), cartTotal());
   document.getElementById('rcCount').textContent = App.cart.reduce((s, i) => s + i.qty, 0);
+  App.lastOrderNum = num;
+  saveOrderLocally(num);
   launchConfetti();
+}
+
+/* بناء نص الطلب لإرساله للمحل */
+function buildOrderText() {
+  const num = App.lastOrderNum || '—';
+  const typ = App.orderType === 'dinein' ? 'تناول بالمحل 🪑' : 'سفري 🥡';
+  const lines = App.cart.map(it => {
+    const l = it.type === 'milkshake' ? DB.extrasMs : DB.extrasJuice;
+    const extras = (it.extras || []).map(eid => { const e = l.find(x => x.id === eid); return e ? e.name : ''; }).filter(Boolean);
+    return `• ${it.qty}× ${it.name} (${sizeLabel(it.size)})${extras.length ? ' + ' + extras.join('، ') : ''} = ${linePrice(it)} دج`;
+  }).join('\n');
+  return `🍹 *طلب جديد — ذوق فروتس*\n\n`
+    + `🔖 رقم الطلب: #${num}\n`
+    + `👤 الاسم: ${App.customerName || '—'}\n`
+    + `📍 النوع: ${typ}\n`
+    + `🕒 ${new Date().toLocaleString('ar-DZ')}\n\n`
+    + `${lines}\n\n`
+    + `💰 *الإجمالي: ${cartTotal()} دج*`;
+}
+
+/* إرسال الطلب للمحل عبر واتساب */
+function sendWhatsApp() {
+  const num = (localStorage.getItem('dhawq_wa') || '').replace(/[^0-9]/g, '');
+  if (!num) { openSettings(); toast('أدخل رقم واتساب المحل أولاً'); return; }
+  const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent(buildOrderText());
+  window.open(url, '_blank');
+}
+
+/* حفظ الطلب محلياً (سجل لصاحب المحل) */
+function saveOrderLocally(num) {
+  try {
+    const arr = JSON.parse(localStorage.getItem('dhawq_orders') || '[]');
+    arr.push({ num, name: App.customerName, type: App.orderType, total: cartTotal(),
+               count: App.cart.reduce((s, i) => s + i.qty, 0), at: Date.now() });
+    localStorage.setItem('dhawq_orders', JSON.stringify(arr.slice(-200)));
+  } catch (e) {}
+}
+
+/* إعدادات المحل (رقم الواتساب) */
+function openSettings() {
+  const m = document.getElementById('settingsModal');
+  document.getElementById('waInput').value = localStorage.getItem('dhawq_wa') || '';
+  m.classList.add('show');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+function saveSettings() {
+  const v = (document.getElementById('waInput').value || '').replace(/[^0-9]/g, '');
+  localStorage.setItem('dhawq_wa', v);
+  closeSettings();
+  toast('تم حفظ رقم المحل ✓');
 }
 
 function finishAndReset() {
