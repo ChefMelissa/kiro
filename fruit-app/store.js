@@ -100,7 +100,11 @@
 
   /* ---------- محوّل Firebase (اختياري) ---------- */
   function getFbConfig() {
-    try { return JSON.parse(localStorage.getItem(FB_KEY) || 'null'); } catch (e) { return null; }
+    // 1) أولوية لإعداد محفوظ يدوياً على هذا الجهاز (إن وُجد)
+    try { const local = JSON.parse(localStorage.getItem(FB_KEY) || 'null'); if (local) return local; } catch (e) {}
+    // 2) وإلا: الإعداد المضمّن في config.js (يعمل تلقائياً على كل الأجهزة)
+    if (global.DHAWQ_FIREBASE && global.DHAWQ_FIREBASE.projectId) return global.DHAWQ_FIREBASE;
+    return null;
   }
   function setFbConfig(cfg) {
     try {
