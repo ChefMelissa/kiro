@@ -400,3 +400,26 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 .rc-actions{width:100%;margin-top:18px;display:flex;flex-direction:column;gap:10px;}
 .btn-wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;box-shadow:0 12px 28px rgba(37,211,102,.34);}
 .btn-wa svg{flex-shrink:0;}
+
+
+/* ---------- Receipt: sent banner ---------- */
+.rc-sent{width:100%;margin-top:14px;text-align:center;background:#dcfce7;color:var(--green-d);
+  font-weight:800;font-size:.92rem;padding:12px;border-radius:14px;}
+
+/* ---------- Print (thermal-friendly receipt) ---------- */
+@media print{
+  @page{ margin:6mm; }
+  body,#app{ background:#fff !important; max-width:none !important; }
+  .settings-gear,.topbar,#confetti,.rc-actions,.rc-sent,.modal,.actionbar{ display:none !important; }
+  .screen{ position:static !important; padding:0 !important; display:none !important; }
+  #receipt.screen{ display:block !important; }
+  #receipt{ min-height:auto !important; }
+  .receipt-card{ box-shadow:none !important; border:none; max-width:320px; margin:0 auto; padding:6px 4px; animation:none !important; }
+  .receipt-card::before,.receipt-card::after{ display:none !important; }
+  .receipt-card *{ color:#000 !important; }
+  .rc-logo{ background:#fff !important; }
+  .rc-brand{ -webkit-text-fill-color:#000 !important; }
+  .rc-info .box{ background:#fff !important; border:1px solid #000 !important; }
+  .rc-total{ background:#fff !important; border:1px dashed #000 !important; }
+  .rc-total .val::after{ color:#000 !important; }
+}

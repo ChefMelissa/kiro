@@ -630,88 +630,96 @@ function confirmOrder() {
   go('receipt');
 }
 
-let orderSeq = parseInt(localStorage.getItem('dhawq_seq') || '0', 10);
+function buildOrderItems() {
+  return App.cart.map(it => {
+    const l = it.type === 'milkshake' ? DB.extrasMs : DB.extrasJuice;
+    const extras = (it.extras || []).map(eid => { const e = l.find(x => x.id === eid); return e ? e.name : ''; }).filter(Boolean);
+    return {
+      name: it.name, type: it.type, size: it.size, sizeLabel: sizeLabel(it.size),
+      qty: it.qty, extras: extras, price: linePrice(it)
+    };
+  });
+}
+
 function renderReceipt() {
-  orderSeq += 1; localStorage.setItem('dhawq_seq', String(orderSeq));
-  const num = String(orderSeq).padStart(3, '0');
+  const n = (typeof OrderStore !== 'undefined') ? OrderStore.nextNumber() : 1;
+  const num = String(n).padStart(3, '0');
+  const now = Date.now();
+
+  // إنشاء الطلب وإرساله إلى لوحة صاحب المحل (مزامنة فورية)
+  const order = {
+    num: n, numStr: num,
+    name: App.customerName || '',
+    orderType: App.orderType || 'takeaway',
+    items: buildOrderItems(),
+    total: cartTotal(),
+    count: App.cart.reduce((s, i) => s + i.qty, 0),
+    status: 'new',
+    createdAt: now,
+  };
+  if (typeof OrderStore !== 'undefined') OrderStore.addOrder(order);
+  App.lastOrder = order;
+  App.lastOrderNum = num;
+
+  // تعبئة الفاتورة
   document.getElementById('rcNumber').textContent = '#' + num;
-  const now = new Date();
-  document.getElementById('rcDate').textContent = now.toLocaleString('ar-DZ', {
+  document.getElementById('rcDate').textContent = new Date(now).toLocaleString('ar-DZ', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
-  document.getElementById('rcType').textContent = App.orderType === 'dinein' ? 'تناول بالمحل 🪑' : 'سفري 🥡';
-  document.getElementById('rcName').textContent = App.customerName ? App.customerName : '—';
+  document.getElementById('rcType').textContent = order.orderType === 'dinein' ? 'تناول بالمحل 🪑' : 'سفري 🥡';
+  document.getElementById('rcName').textContent = order.name ? order.name : '—';
 
-  const lines = App.cart.map(it => {
-    const extras = (it.extras || []).map(eid => {
-      const l = it.type === 'milkshake' ? DB.extrasMs : DB.extrasJuice;
-      const e = l.find(x => x.id === eid); return e ? e.name : '';
-    }).filter(Boolean);
-    return `<div class="rc-line">
+  document.getElementById('rcLines').innerHTML = order.items.map(it => `
+    <div class="rc-line">
       <div class="rc-line-top">
         <span class="rc-qty">${it.qty}×</span>
         <span class="rc-name">${it.name}</span>
-        <span class="rc-amt">${linePrice(it)}</span>
+        <span class="rc-amt">${it.price}</span>
       </div>
-      <div class="rc-sub">${sizeLabel(it.size)}${extras.length ? ' • ' + extras.join('، ') : ''}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('rcLines').innerHTML = lines;
-  animateNumber(document.getElementById('rcTotal'), cartTotal());
-  document.getElementById('rcCount').textContent = App.cart.reduce((s, i) => s + i.qty, 0);
-  App.lastOrderNum = num;
-  saveOrderLocally(num);
+      <div class="rc-sub">${it.sizeLabel}${it.extras.length ? ' • ' + it.extras.join('، ') : ''}</div>
+    </div>`).join('');
+  animateNumber(document.getElementById('rcTotal'), order.total);
+  document.getElementById('rcCount').textContent = order.count;
   launchConfetti();
 }
 
-/* بناء نص الطلب لإرساله للمحل */
-function buildOrderText() {
-  const num = App.lastOrderNum || '—';
-  const typ = App.orderType === 'dinein' ? 'تناول بالمحل 🪑' : 'سفري 🥡';
-  const lines = App.cart.map(it => {
-    const l = it.type === 'milkshake' ? DB.extrasMs : DB.extrasJuice;
-    const extras = (it.extras || []).map(eid => { const e = l.find(x => x.id === eid); return e ? e.name : ''; }).filter(Boolean);
-    return `• ${it.qty}× ${it.name} (${sizeLabel(it.size)})${extras.length ? ' + ' + extras.join('، ') : ''} = ${linePrice(it)} دج`;
-  }).join('\n');
-  return `🍹 *طلب جديد — ذوق فروتس*\n\n`
-    + `🔖 رقم الطلب: #${num}\n`
-    + `👤 الاسم: ${App.customerName || '—'}\n`
-    + `📍 النوع: ${typ}\n`
-    + `🕒 ${new Date().toLocaleString('ar-DZ')}\n\n`
-    + `${lines}\n\n`
-    + `💰 *الإجمالي: ${cartTotal()} دج*`;
-}
+/* طباعة الفاتورة */
+function printReceipt() { window.print(); }
 
-/* إرسال الطلب للمحل عبر واتساب */
-function sendWhatsApp() {
-  const num = (localStorage.getItem('dhawq_wa') || '').replace(/[^0-9]/g, '');
-  if (!num) { openSettings(); toast('أدخل رقم واتساب المحل أولاً'); return; }
-  const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent(buildOrderText());
-  window.open(url, '_blank');
-}
-
-/* حفظ الطلب محلياً (سجل لصاحب المحل) */
-function saveOrderLocally(num) {
-  try {
-    const arr = JSON.parse(localStorage.getItem('dhawq_orders') || '[]');
-    arr.push({ num, name: App.customerName, type: App.orderType, total: cartTotal(),
-               count: App.cart.reduce((s, i) => s + i.qty, 0), at: Date.now() });
-    localStorage.setItem('dhawq_orders', JSON.stringify(arr.slice(-200)));
-  } catch (e) {}
-}
-
-/* إعدادات المحل (رقم الواتساب) */
+/* ---- إعدادات المحل + الوصول للوحة ---- */
 function openSettings() {
-  const m = document.getElementById('settingsModal');
-  document.getElementById('waInput').value = localStorage.getItem('dhawq_wa') || '';
-  m.classList.add('show');
+  const fb = (typeof OrderStore !== 'undefined') ? OrderStore.getFbConfig() : null;
+  document.getElementById('fbInput').value = fb ? JSON.stringify(fb, null, 2) : '';
+  document.getElementById('modeLabel').textContent =
+    (typeof OrderStore !== 'undefined' && OrderStore.mode === 'firebase') ? 'متعدد الأجهزة (Firebase) ✓' : 'جهاز واحد (محلي)';
+  document.getElementById('settingsModal').classList.add('show');
 }
 function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+
 function saveSettings() {
-  const v = (document.getElementById('waInput').value || '').replace(/[^0-9]/g, '');
-  localStorage.setItem('dhawq_wa', v);
+  const raw = (document.getElementById('fbInput').value || '').trim();
+  if (typeof OrderStore !== 'undefined') {
+    if (!raw) { OrderStore.setFbConfig(null); }
+    else {
+      try { OrderStore.setFbConfig(JSON.parse(raw)); }
+      catch (e) { toast('صيغة إعدادات Firebase غير صحيحة'); return; }
+    }
+  }
   closeSettings();
-  toast('تم حفظ رقم المحل ✓');
+  toast('تم الحفظ ✓ — أعد تحميل الصفحة لتفعيل التغييرات');
+}
+
+/* الدخول إلى لوحة صاحب المحل (محميّة برمز) */
+function openDashboard() {
+  const pin = localStorage.getItem('dhawq_pin') || '1234';
+  const entry = prompt('أدخل رمز صاحب المحل:');
+  if (entry === null) return;
+  if (entry === pin) {
+    try { sessionStorage.setItem('dhawq_auth', '1'); } catch (e) {}
+    window.location.href = 'dashboard.html';
+  } else {
+    toast('رمز غير صحيح');
+  }
 }
 
 function finishAndReset() {
@@ -794,7 +802,8 @@ document.addEventListener('error', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   newDraft();
   updateCartBadge();
-  console.log('🍹 ذوق فروتس v3.0 جاهز');
+  if (typeof OrderStore !== 'undefined') OrderStore.tryEnableFirebase();
+  console.log('🍹 ذوق فروتس — الكشك جاهز');
 });
 
 /* كشف للاختبارات (غير مؤثر في المتصفح) */
