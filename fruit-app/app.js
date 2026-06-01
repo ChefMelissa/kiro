@@ -686,27 +686,14 @@ function renderReceipt() {
 /* طباعة الفاتورة */
 function printReceipt() { window.print(); }
 
-/* ---- إعدادات المحل + الوصول للوحة ---- */
-function openSettings() {
-  const fb = (typeof OrderStore !== 'undefined') ? OrderStore.getFbConfig() : null;
-  document.getElementById('fbInput').value = fb ? JSON.stringify(fb, null, 2) : '';
-  document.getElementById('modeLabel').textContent =
-    (typeof OrderStore !== 'undefined' && OrderStore.mode === 'firebase') ? 'متعدد الأجهزة (Firebase) ✓' : 'جهاز واحد (محلي)';
-  document.getElementById('settingsModal').classList.add('show');
-}
-function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
-
-function saveSettings() {
-  const raw = (document.getElementById('fbInput').value || '').trim();
-  if (typeof OrderStore !== 'undefined') {
-    if (!raw) { OrderStore.setFbConfig(null); }
-    else {
-      try { OrderStore.setFbConfig(JSON.parse(raw)); }
-      catch (e) { toast('صيغة إعدادات Firebase غير صحيحة'); return; }
-    }
-  }
-  closeSettings();
-  toast('تم الحفظ ✓ — أعد تحميل الصفحة لتفعيل التغييرات');
+/* ---- وصول خفيّ للوحة صاحب المحل (لا يظهر للزبون) ----
+   انقر شعار 🍹 خمس مرات متتالية لفتح طلب الرمز ثم الدخول للوحة. */
+let _tapCount = 0, _tapTimer = null;
+function secretTap() {
+  _tapCount++;
+  clearTimeout(_tapTimer);
+  _tapTimer = setTimeout(() => { _tapCount = 0; }, 1500);
+  if (_tapCount >= 5) { _tapCount = 0; openDashboard(); }
 }
 
 /* الدخول إلى لوحة صاحب المحل (محميّة برمز) */

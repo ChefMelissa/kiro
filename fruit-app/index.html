@@ -15,10 +15,9 @@
 
 <!-- ============ WELCOME ============ -->
 <section id="welcome" class="screen active">
-  <button class="settings-gear" onclick="openSettings()" aria-label="إعدادات">⚙️</button>
   <div class="welcome-orbs"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
   <div class="welcome-inner">
-    <div class="logo-badge">🍹</div>
+    <div class="logo-badge" onclick="secretTap()">🍹</div>
     <h1 class="brand">ذوق فروتس</h1>
     <p class="brand-sub">صحتك هي استثمارك الأول</p>
     <div class="brand-line"></div>
@@ -252,22 +251,7 @@
   </div>
 </section>
 
-<!-- ============ SETTINGS MODAL ============ -->
-<div id="settingsModal" class="modal">
-  <div class="modal-card">
-    <h3 class="modal-title">إعدادات المحل ⚙️</h3>
-    <button class="btn btn-cta" style="margin-bottom:16px" onclick="openDashboard()">🍹 لوحة صاحب المحل (الطلبات)</button>
-    <p class="modal-note">وضع المزامنة الحالي: <b id="modeLabel">جهاز واحد (محلي)</b>.<br>للربط بين تابلت الزبون وشاشة المطبخ على أجهزة مختلفة، الصق إعدادات Firebase أدناه.</p>
-    <div class="field">
-      <label>إعدادات Firebase (اختياري)</label>
-      <textarea id="fbInput" rows="6" placeholder='{ "apiKey": "...", "projectId": "fruit-8e380", ... }' style="width:100%;padding:13px;border-radius:12px;border:2px solid var(--line);font-family:var(--font);font-size:.85rem;resize:vertical;background:var(--paper);color:var(--ink)"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeSettings()">إغلاق</button>
-      <button class="btn btn-cta" onclick="saveSettings()">حفظ</button>
-    </div>
-  </div>
-</div>
+<!-- ============ SETTINGS MODAL (تم نقله للوحة المحل — لا يظهر للزبون) ============ -->
 
 <div id="confetti"></div>
 </div>
