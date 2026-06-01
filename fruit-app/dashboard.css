@@ -90,6 +90,8 @@ button{font-family:var(--font);cursor:pointer;border:none;}
 .oc-total{font-weight:900;font-size:1.05rem;}
 .oc-actions{margin-right:auto;display:flex;align-items:center;gap:8px;}
 .oc-del{width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,.12);color:#fca5a5;font-size:15px;}
+.oc-print{width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,.12);color:#93c5fd;font-size:15px;}
+.oc-print:active{transform:scale(.92);}
 .oc-advance{padding:10px 16px;border-radius:11px;font-weight:800;font-size:.9rem;color:#fff;
   background:linear-gradient(135deg,var(--green),#0e7a36);}
 .oc-advance:active{transform:scale(.96);}

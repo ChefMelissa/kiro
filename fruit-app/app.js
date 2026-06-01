@@ -681,10 +681,20 @@ function renderReceipt() {
   animateNumber(document.getElementById('rcTotal'), order.total);
   document.getElementById('rcCount').textContent = order.count;
   launchConfetti();
+
+  // تجهيز الفاتورة الحرارية والطباعة التلقائية (الطابعة أمام التابلت)
+  if (typeof renderReceiptHTML === 'function') {
+    const pa = document.getElementById('printArea');
+    if (pa) pa.innerHTML = renderReceiptHTML(order);
+  }
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 700);
 }
 
-/* طباعة الفاتورة */
-function printReceipt() { window.print(); }
+/* طباعة يدوية (غير مستخدمة في واجهة الزبون) */
+function printReceipt() {
+  if (App.lastOrder && typeof printOrder === 'function') printOrder(App.lastOrder);
+  else { try { window.print(); } catch (e) {} }
+}
 
 /* ---- وصول خفيّ للوحة صاحب المحل (لا يظهر للزبون) ----
    انقر شعار 🍹 خمس مرات متتالية لفتح طلب الرمز ثم الدخول للوحة. */

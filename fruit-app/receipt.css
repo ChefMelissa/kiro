@@ -1,0 +1,42 @@
+/* =========================================================
+   ذوق فروتس — تنسيق الفاتورة الحرارية + قواعد الطباعة
+   مشترك بين الكشك ولوحة المحل.
+   ========================================================= */
+
+/* منطقة الطباعة مخفية على الشاشة، تظهر فقط عند الطباعة */
+#printArea { display: none; }
+
+.ticket {
+  width: 76mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 3mm 2mm;
+  color: #000;
+  background: #fff;
+  font-family: 'Tajawal', system-ui, sans-serif;
+  direction: rtl;
+}
+.ticket .t-head { text-align: center; }
+.ticket .t-logo { font-size: 26px; line-height: 1; }
+.ticket .t-shop { font-size: 20px; font-weight: 900; margin-top: 2px; }
+.ticket .t-slogan { font-size: 10px; letter-spacing: .3px; margin-top: 2px; }
+.ticket .t-line { border-top: 1px dashed #000; margin: 6px 0; }
+.ticket .t-line.thin { border-top-style: dotted; margin: 3px 0; }
+.ticket .t-meta-row { display: flex; justify-content: space-between; font-size: 11.5px; margin: 2px 0; }
+.ticket .t-meta-row span { color: #333; }
+.ticket .t-cols { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #555; }
+.ticket .t-item { margin: 5px 0; }
+.ticket .t-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ticket .t-name { font-size: 13px; font-weight: 700; }
+.ticket .t-amt { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.ticket .t-sub { font-size: 10.5px; color: #444; padding-right: 14px; margin-top: 1px; }
+.ticket .t-total { display: flex; justify-content: space-between; font-size: 17px; font-weight: 900; }
+.ticket .t-foot { text-align: center; font-size: 10.5px; margin-top: 6px; line-height: 1.7; }
+.ticket .t-foot .t-ig { font-weight: 700; }
+
+@media print {
+  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  body > * { display: none !important; }
+  #printArea { display: block !important; }
+  @page { margin: 4mm; }
+}

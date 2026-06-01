@@ -122,6 +122,7 @@ function orderCard(o) {
       <div class="oc-foot">
         <span class="oc-total">${(o.total || 0).toLocaleString('en-US')} دج</span>
         <div class="oc-actions">
+          <button class="oc-print" onclick="printDash('${o.id}')" title="طباعة الفاتورة">🖨️</button>
           <button class="oc-del" onclick="del('${o.id}')" title="حذف">🗑</button>
           ${nextBtn}
         </div>
@@ -136,6 +137,12 @@ function advance(id) {
   if (next) OrderStore.updateStatus(id, next);
 }
 function del(id) { if (confirm('حذف هذا الطلب؟')) OrderStore.removeOrder(id); }
+
+/* طباعة فاتورة طلب من اللوحة */
+function printDash(id) {
+  const o = OrderStore.getOrders().find(x => x.id === id);
+  if (o && typeof printOrder === 'function') printOrder(o);
+}
 
 /* ---------- تنبيه الطلب الجديد ---------- */
 function onNewOrder(o) {
